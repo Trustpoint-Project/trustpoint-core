@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from trustpoint_core.types import PrivateKey, PublicKey
 
+
 class PublicKeySerializer(Serializer):
     """The PublicKeySerializer class provides methods for serializing and loading a public key.
 

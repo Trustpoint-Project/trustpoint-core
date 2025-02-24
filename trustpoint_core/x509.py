@@ -7,7 +7,10 @@ from typing import TYPE_CHECKING
 
 from cryptography.exceptions import InvalidSignature
 
-from trustpoint_core.serializer.certificate import CertificateSerializer, CertificateCollectionSerializer
+from trustpoint_core.serializer.certificate import (
+    CertificateSerializer,
+    CertificateCollectionSerializer,
+)
 
 if TYPE_CHECKING:
     from cryptography import x509
