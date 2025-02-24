@@ -9,10 +9,7 @@ from cryptography.hazmat.primitives.serialization import Encoding, PrivateFormat
 
 from trustpoint_core.serializer import Serializer
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from trustpoint_core.types import PrivateKey, PublicKey
+from trustpoint_core.types import PrivateKey, PublicKey
 
 
 class PublicKeySerializer(Serializer):
