@@ -6,9 +6,13 @@ from __future__ import annotations
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import Encoding, PrivateFormat, pkcs12
 
-from trustpoint_core.oid import PrivateKey, PublicKey
+
 from trustpoint_core.serializer import Serializer
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from trustpoint_core.types import PrivateKey, PublicKey
 
 class PublicKeySerializer(Serializer):
     """The PublicKeySerializer class provides methods for serializing and loading a public key.
