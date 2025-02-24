@@ -6,8 +6,8 @@ from __future__ import annotations
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import Encoding, PrivateFormat, pkcs12
 
-from ..oid import PrivateKey, PublicKey
-from . import Serializer
+from trustpoint_core.oid import PrivateKey, PublicKey
+from trustpoint_core.serializer import Serializer
 
 
 class PublicKeySerializer(Serializer):

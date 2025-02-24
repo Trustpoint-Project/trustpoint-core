@@ -3,9 +3,9 @@
 
 from __future__ import annotations
 
-from .archiver import Archiver
-from .enum import ArchiveFormat, CertificateFileFormat
-from ..serializer import CertificateCollectionSerializer, CertificateSerializer
+from trustpoint_core.file_builder.archiver import Archiver
+from trustpoint_core.file_builder.enum import ArchiveFormat, CertificateFileFormat
+from trustpoint_core.serializer import CertificateCollectionSerializer, CertificateSerializer
 
 
 class CertificateFileBuilder:

@@ -9,7 +9,7 @@ from cryptography import x509
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import pkcs7
 
-from . import PublicKeySerializer, Serializer
+from trustpoint_core.serializer import PublicKeySerializer, Serializer
 
 
 class CertificateSerializer(Serializer):

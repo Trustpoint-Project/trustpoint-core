@@ -9,9 +9,9 @@ from typing import TYPE_CHECKING
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import pkcs12
 
-from ..file_builder.archiver import Archiver
+from trustpoint_core.file_builder.archiver import Archiver
 
-from . import (
+from trustpoint_core.serializer import (
     CertificateCollectionSerializer,
     CertificateSerializer,
     PrivateKeySerializer,

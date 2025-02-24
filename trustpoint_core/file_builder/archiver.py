@@ -7,7 +7,7 @@ import io
 import tarfile
 import zipfile
 
-from .enum import ArchiveFormat
+from trustpoint_core.file_builder.enum import ArchiveFormat
 
 
 class Archiver:
