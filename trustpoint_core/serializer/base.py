@@ -1,5 +1,7 @@
 """The base module provides abstract base Serializer classes."""
 
+from __future__ import annotations
+
 import abc
 
 

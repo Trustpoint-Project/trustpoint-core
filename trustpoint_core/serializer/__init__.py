@@ -50,6 +50,8 @@ API Documentation
     - cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey
 """
 
+from __future__ import annotations
+
 from .base import Serializer
 from .key import PrivateKeySerializer, PublicKeySerializer
 from .certificate import CertificateCollectionSerializer, CertificateSerializer

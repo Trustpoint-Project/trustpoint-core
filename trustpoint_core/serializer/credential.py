@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     from typing import Union
     from cryptography import x509
     from cryptography.hazmat.primitives.serialization import KeySerializationEncryption
-    from ..oid import PrivateKey
+    from trustpoint_core.types import PrivateKey
 
     CertificateType = Union[bytes, str, x509.Certificate, CertificateSerializer]
     PrivateKeyType = Union[bytes | str | PrivateKey | PrivateKeySerializer]
