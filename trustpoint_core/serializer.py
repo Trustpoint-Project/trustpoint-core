@@ -120,8 +120,7 @@ class PublicKeySerializer:
 
         return cls(certificate.public_key())
 
-    @property
-    def public_key(self) -> PublicKey:
+    def as_crypto(self) -> PublicKey:
         """Gets the contained public key object.
 
         Returns:
@@ -129,23 +128,31 @@ class PublicKeySerializer:
         """
         return self._public_key
 
-    @property
-    def pem(self) -> bytes:
-        if self._pem is None:
-            self._pem = self._public_key.public_bytes(
-                encoding=serialization.Encoding.PEM,
-                format=serialization.PublicFormat.SubjectPublicKeyInfo,
-            )
-        return self._pem
+    def as_der(self) -> bytes:
+        """Gets the contained public key as DER encoded bytes.
 
-    @property
-    def der(self) -> bytes:
+        Returns:
+            The contained public key as DER encoded bytes.
+        """
         if self._der is None:
             self._der = self._public_key.public_bytes(
             encoding=serialization.Encoding.DER,
             format=serialization.PublicFormat.SubjectPublicKeyInfo,
         )
         return self._der
+
+    def as_pem(self) -> bytes:
+        """Gets the contained public key as PEM encoded bytes.
+
+        Returns:
+            The contained public key as PEM encoded bytes.
+        """
+        if self._pem is None:
+            self._pem = self._public_key.public_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PublicFormat.SubjectPublicKeyInfo,
+            )
+        return self._pem
 
 
 class PrivateKeySerializer:
