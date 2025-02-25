@@ -21,14 +21,18 @@ jobs:
         with:
           enable-cache: true
           version: "0.6.3"
+          cache-dependency-glob: "uv.lock"
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version-file: "pyproject.toml"
 
+      - name: Install the project
+        run: uv sync --all-extras --dev
+
       - name: Build package
-        run: uv build
+        run: uv build --require-hashes
 
       - name: Publish Package
-        run: uv publish
+        run: uv publish --trusted-publishing always
