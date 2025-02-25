@@ -26,6 +26,8 @@ class PublicKeySerializer:
         Args:
             public_key: The public key object to be serialized.
         """
+        if not isinstance(public_key, PublicKey):
+            raise TypeError("Public key must be of type 'PublicKey'")
         self._public_key = public_key
 
     @classmethod
@@ -42,16 +44,15 @@ class PublicKeySerializer:
             TypeError: If public_key is not a bytes object.
             ValueError: If loading the public key failed.
         """
-        if not isinstance(public_key, bytes):
-            err_msg = f'Expected public_key to be a bytes object, got {type(public_key)}.'
-            raise TypeError(err_msg)
-
         try:
             return cls(serialization.load_der_public_key(public_key))
         except crypto_exceptions.UnsupportedAlgorithm as exception:
             err_msg = 'Algorithm found in public key is not supported.'
             raise ValueError(err_msg) from exception
-        except ValueError as exception:
+        except TypeError as exception:
+            err_msg = f'Expected public_key to be a bytes-like object, got {type(public_key)}.'
+            raise TypeError(err_msg) from exception
+        except Exception as exception:
             err_msg = 'Failed to load public key in DER format. Either wrong format or corrupted public key.'
             raise ValueError(err_msg) from exception
 
@@ -69,15 +70,14 @@ class PublicKeySerializer:
             TypeError: If public_key is not a bytes object.
             ValueError: If loading the public key failed.
         """
-        if not isinstance(public_key, bytes):
-            err_msg = f'Expected public_key to be a bytes object, got {type(public_key)}.'
-            raise TypeError(err_msg)
-
         try:
             return cls(serialization.load_pem_public_key(public_key))
         except crypto_exceptions.UnsupportedAlgorithm as exception:
-            err_msg = 'Algorithm found in public key is not supported.'
+            err_msg = 'The algorithm of the provided public key is not supported.'
             raise ValueError(err_msg) from exception
+        except TypeError as exception:
+            err_msg = f'Expected public_key to be a bytes-like object, got {type(public_key)}.'
+            raise TypeError(err_msg) from exception
         except ValueError as exception:
             err_msg = 'Failed to load public key in PEM format. Either wrong format or corrupted public key.'
             raise ValueError(err_msg) from exception
