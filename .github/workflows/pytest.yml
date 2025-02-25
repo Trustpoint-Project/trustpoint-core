@@ -1,10 +1,6 @@
 name: Pytest
 
-#on: [ pull_request ]
-on:
-  push:
-    branches:
-      - ci-cd
+on: [pull_request]
 
 jobs:
   pytest:
