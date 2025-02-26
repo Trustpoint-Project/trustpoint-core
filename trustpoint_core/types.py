@@ -1,4 +1,4 @@
-"""This module defines types used for TYPE_CHECKING."""
+"""This module defines types used for TYPE_CHECKING and isinstance() checks using typing.get_args()."""
 
 from __future__ import annotations
 
