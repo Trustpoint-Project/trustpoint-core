@@ -1,14 +1,16 @@
 import pytest
 from cryptography.hazmat.primitives._serialization import BestAvailableEncryption, NoEncryption
-from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.primitives.serialization.pkcs12 import PKCS12KeyAndCertificates
 import trustpoint_core.serializer as serializer
-from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
-from cryptography import x509
-from trustpoint_core.serializer import PublicKeySerializer
 from datetime import datetime, timedelta, timezone
 from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
+from cryptography import x509
+from cryptography.hazmat.primitives.serialization import pkcs12
+from cryptography.hazmat.primitives.serialization.pkcs12 import PKCS12KeyAndCertificates
+from trustpoint_core.serializer import PrivateKeySerializer, PublicKeySerializer
 
 
 def test_load_pkc12():
@@ -145,9 +147,9 @@ def test_from_certificate(rsa_keypair):
         .issuer_name(issuer)
         .public_key(public_key)
         .serial_number(x509.random_serial_number())
-        .not_valid_before(datetime.now(timezone.utc))  # ✅ Fix: Use timezone-aware datetime
-        .not_valid_after(datetime.now(timezone.utc) + timedelta(days=365))  # ✅ Fix
-        .sign(private_key=rsa_keypair[0], algorithm=hashes.SHA256())  # ✅ Fix: Correct import
+        .not_valid_before(datetime.now(timezone.utc))
+        .not_valid_after(datetime.now(timezone.utc) + timedelta(days=365))
+        .sign(private_key=rsa_keypair[0], algorithm=hashes.SHA256())
     )
 
     serializer = PublicKeySerializer.from_certificate(certificate)
@@ -176,3 +178,158 @@ def test_as_pem(rsa_keypair):
     pem_bytes = serializer.as_pem()
     assert isinstance(pem_bytes, bytes)
     assert b"-----BEGIN PUBLIC KEY-----" in pem_bytes
+
+
+#Here Starts Test Cases for PrivateKeySerializer
+
+def test_private_key_serializer_init(rsa_keypair):
+
+    private_key, _ = rsa_keypair
+    serializer = PrivateKeySerializer(private_key)
+    assert serializer.as_crypto() == private_key
+
+
+def test_private_key_serializer_invalid_init():
+
+    with pytest.raises(TypeError, match="Expected a private key object"):
+        PrivateKeySerializer("invalid_private_key")
+
+
+
+
+def test_from_pem(rsa_keypair):
+
+    private_key, _ = rsa_keypair
+    pem_bytes = private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption(),
+    )
+
+    serializer = PrivateKeySerializer.from_pem(pem_bytes)
+    assert isinstance(serializer.as_crypto(), RSAPrivateKey)
+
+
+def test_from_pem_invalid():
+
+    with pytest.raises(ValueError, match="Failed to load the private key in PEM format"):
+        PrivateKeySerializer.from_pem(b"INVALID PEM DATA")
+
+
+def test_from_pem_wrong_type():
+
+    with pytest.raises(TypeError, match="Expected private_key to be a bytes object"):
+        PrivateKeySerializer.from_pem(12345)
+
+
+
+
+def test_from_der(rsa_keypair):
+
+    private_key, _ = rsa_keypair
+    der_bytes = private_key.private_bytes(
+        encoding=serialization.Encoding.DER,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption(),
+    )
+
+    serializer = PrivateKeySerializer.from_der(der_bytes)
+    assert isinstance(serializer.as_crypto(), RSAPrivateKey)
+
+
+def test_from_der_invalid():
+
+    with pytest.raises(ValueError, match="Failed to load the private key in DER format"):
+        PrivateKeySerializer.from_der(b"\x00\x01\x02")
+
+
+def test_from_der_wrong_type():
+
+    with pytest.raises(TypeError, match="Expected private_key to be a bytes object"):
+        PrivateKeySerializer.from_der(12345)
+
+
+
+
+def test_from_pkcs12_bytes(rsa_keypair):
+
+
+    private_key, _ = rsa_keypair
+    pkcs12_bytes = pkcs12.serialize_key_and_certificates(
+        name=b"test",
+        key=private_key,
+        cert=None,
+        cas=None,
+        encryption_algorithm=serialization.NoEncryption(),
+    )
+
+    serializer = PrivateKeySerializer.from_pkcs12_bytes(pkcs12_bytes)
+    assert isinstance(serializer.as_crypto(), RSAPrivateKey)
+
+
+def test_from_pkcs12_invalid():
+
+    with pytest.raises(ValueError, match="Failed to load PKCS#12 bytes"):
+        PrivateKeySerializer.from_pkcs12_bytes(b" ")
+
+
+
+def test_as_pkcs1_der(rsa_keypair):
+
+    private_key, _ = rsa_keypair
+    serializer = PrivateKeySerializer(private_key)
+
+    der_bytes = serializer.as_pkcs1_der()
+    assert isinstance(der_bytes, bytes)
+    assert len(der_bytes) > 0
+
+
+def test_as_pkcs1_pem(rsa_keypair):
+
+    private_key, _ = rsa_keypair
+    serializer = PrivateKeySerializer(private_key)
+
+    pem_bytes = serializer.as_pkcs1_pem()
+    assert isinstance(pem_bytes, bytes)
+    assert b"-----BEGIN RSA PRIVATE KEY-----" in pem_bytes
+
+
+def test_as_pkcs8_der(rsa_keypair):
+
+    private_key, _ = rsa_keypair
+    serializer = PrivateKeySerializer(private_key)
+
+    der_bytes = serializer.as_pkcs8_der()
+    assert isinstance(der_bytes, bytes)
+    assert len(der_bytes) > 0
+
+
+def test_as_pkcs8_pem(rsa_keypair):
+
+    private_key, _ = rsa_keypair
+    serializer = PrivateKeySerializer(private_key)
+
+    pem_bytes = serializer.as_pkcs8_pem()
+    assert isinstance(pem_bytes, bytes)
+    assert b"-----BEGIN PRIVATE KEY-----" in pem_bytes
+
+
+def test_as_pkcs12(rsa_keypair):
+
+    private_key, _ = rsa_keypair
+    serializer = PrivateKeySerializer(private_key)
+
+    pkcs12_bytes = serializer.as_pkcs12()
+    assert isinstance(pkcs12_bytes, bytes)
+    assert len(pkcs12_bytes) > 0
+
+
+
+def test_public_key_serializer(rsa_keypair):
+
+    private_key, public_key = rsa_keypair
+    serializer = PrivateKeySerializer(private_key)
+
+    public_serializer = serializer.public_key_serializer
+    assert isinstance(public_serializer, PublicKeySerializer)
+    assert public_serializer.as_crypto() == public_key
