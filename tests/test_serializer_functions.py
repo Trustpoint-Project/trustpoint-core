@@ -621,11 +621,11 @@ def test_as_pkcs7_der(generate_certificates):
 
 def test_add_certificate(generate_certificates):
 
-    serializer = CertificateCollectionSerializer(generate_certificates[:2])  # Start with 2 certs
+    serializer = CertificateCollectionSerializer(generate_certificates[:2])  
     new_cert = generate_certificates[2]
     new_collection = serializer + new_cert
 
-    assert len(new_collection.as_crypto()) == 3  # Now contains 3 certs
+    assert len(new_collection.as_crypto()) == 3  
 
 
 def test_add_certificate_collection(generate_certificates):
