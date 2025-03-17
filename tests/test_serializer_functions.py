@@ -197,7 +197,7 @@ def test_from_private_key_with_public_key(rsa_keypair):
 def test_from_certificate(rsa_keypair):
     _, public_key = rsa_keypair
 
-    # Create a self-signed certificate for testing
+   
     subject = issuer = x509.Name([
         x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, u"Test Certificate")
     ])
