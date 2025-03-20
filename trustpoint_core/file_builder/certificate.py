@@ -37,7 +37,7 @@ class CertificateFileBuilder:
         if file_format == CertificateFileFormat.PKCS7_DER:
             return certificate_serializer.as_pkcs7_der()
 
-        err_msg = f"Unsupported file format: {file_format}."
+        err_msg = f'Unsupported file format: {file_format}.'
         raise ValueError(err_msg)
 
 
@@ -66,7 +66,7 @@ class CertificateCollectionBuilder:
         if file_format == CertificateFileFormat.PKCS7_DER:
             return certificate_collection_serializer.as_pkcs7_der()
 
-        err_msg = f"Unsupported file format: {file_format}."
+        err_msg = f'Unsupported file format: {file_format}.'
         raise ValueError(err_msg)
 
 
@@ -75,8 +75,7 @@ class CertificateArchiveFileBuilder:
 
     @staticmethod
     def build(
-        certificate_serializers: CertificateCollectionSerializer
-        | list[CertificateSerializer],
+        certificate_serializers: CertificateCollectionSerializer | list[CertificateSerializer],
         file_format: CertificateFileFormat,
         archive_format: ArchiveFormat,
     ) -> bytes:
@@ -91,14 +90,12 @@ class CertificateArchiveFileBuilder:
             bytes: The archive in byte representation.
         """
         if isinstance(certificate_serializers, CertificateCollectionSerializer):
-            certificate_serializers = (
-                certificate_serializers.as_certificate_serializer_list()
-            )
+            certificate_serializers = certificate_serializers.as_certificate_serializer_list()
 
         if file_format == CertificateFileFormat.PEM:
             return Archiver.archive(
                 data_to_archive={
-                    f"certificate-{index}{file_format.file_extension}": certificate.as_pem()
+                    f'certificate-{index}{file_format.file_extension}': certificate.as_pem()
                     for index, certificate in enumerate(certificate_serializers)
                 },
                 archive_format=archive_format,
@@ -106,7 +103,7 @@ class CertificateArchiveFileBuilder:
         if file_format == CertificateFileFormat.DER:
             return Archiver.archive(
                 data_to_archive={
-                    f"certificate-{index}{file_format.file_extension}": certificate.as_der()
+                    f'certificate-{index}{file_format.file_extension}': certificate.as_der()
                     for index, certificate in enumerate(certificate_serializers)
                 },
                 archive_format=archive_format,
@@ -114,7 +111,7 @@ class CertificateArchiveFileBuilder:
         if file_format == CertificateFileFormat.PKCS7_PEM:
             return Archiver.archive(
                 data_to_archive={
-                    f"certificate-{index}{file_format.file_extension}": certificate.as_pkcs7_pem()
+                    f'certificate-{index}{file_format.file_extension}': certificate.as_pkcs7_pem()
                     for index, certificate in enumerate(certificate_serializers)
                 },
                 archive_format=archive_format,
@@ -122,13 +119,13 @@ class CertificateArchiveFileBuilder:
         if file_format == CertificateFileFormat.PKCS7_DER:
             return Archiver.archive(
                 data_to_archive={
-                    f"certificate-{index}{file_format.file_extension}": certificate.as_pkcs7_der()
+                    f'certificate-{index}{file_format.file_extension}': certificate.as_pkcs7_der()
                     for index, certificate in enumerate(certificate_serializers)
                 },
                 archive_format=archive_format,
             )
 
-        err_msg = f"Unsupported file format: {file_format}."
+        err_msg = f'Unsupported file format: {file_format}.'
         raise ValueError(err_msg)
 
 
@@ -155,33 +152,27 @@ class CertificateCollectionArchiveFileBuilder:
         if file_format == CertificateFileFormat.PEM:
             return Archiver.archive(
                 data_to_archive={
-                    f"certificate-{index}{file_format.file_extension}": certificate_collection.as_pem()
-                    for index, certificate_collection in enumerate(
-                        certificate_collection_serializers
-                    )
+                    f'certificate-{index}{file_format.file_extension}': certificate_collection.as_pem()
+                    for index, certificate_collection in enumerate(certificate_collection_serializers)
                 },
                 archive_format=archive_format,
             )
         if file_format == CertificateFileFormat.PKCS7_PEM:
             return Archiver.archive(
                 data_to_archive={
-                    f"certificate-{index}{file_format.file_extension}": certificate_collection.as_pkcs7_pem()
-                    for index, certificate_collection in enumerate(
-                        certificate_collection_serializers
-                    )
+                    f'certificate-{index}{file_format.file_extension}': certificate_collection.as_pkcs7_pem()
+                    for index, certificate_collection in enumerate(certificate_collection_serializers)
                 },
                 archive_format=archive_format,
             )
         if file_format == CertificateFileFormat.PKCS7_DER:
             return Archiver.archive(
                 data_to_archive={
-                    f"certificate-{index}{file_format.file_extension}": certificate_collection.as_pkcs7_der()
-                    for index, certificate_collection in enumerate(
-                        certificate_collection_serializers
-                    )
+                    f'certificate-{index}{file_format.file_extension}': certificate_collection.as_pkcs7_der()
+                    for index, certificate_collection in enumerate(certificate_collection_serializers)
                 },
                 archive_format=archive_format,
             )
 
-        err_msg = f"Unsupported file format: {file_format}."
+        err_msg = f'Unsupported file format: {file_format}.'
         raise ValueError(err_msg)

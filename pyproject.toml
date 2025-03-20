@@ -16,7 +16,50 @@ dev = [
     "pytest-html>=4.1.1",
 ]
 
-
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 120
+indent-width = 4
+
+[tool.ruff.lint.flake8-quotes]
+docstring-quotes = "double"
+inline-quotes = "single"
+multiline-quotes = "double"
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "ANN401",   # Since django makes extensive use of the Any type, we are OK with using it.
+    "COM812",   # Not compatible with the formatter
+    # TODO(AlexHx8472): We should use this in the future.
+    "TD003",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**/**.py" = ["S101"]
+
+[tool.ruff.format]
+quote-style = "single"
+indent-style = "space"
+docstring-code-format = true
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.mypy]
+strict = true
+# Removed the plugins line , giving error
+# plugins = ["mypy_django_plugin.main"]
+
+[[tool.mypy.overrides]]
+module = ["crispy_bootstrap5.*", "crispy_forms.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = 'trustpoint.settings'
+python_files = 'test_*.py'
+md_report = true
+md_report_output = 'md-report.md'

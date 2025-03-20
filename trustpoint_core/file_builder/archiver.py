@@ -22,7 +22,7 @@ class Archiver:
             bytes: The binary representation of the archive.
         """
         bytes_io = io.BytesIO()
-        zip_file = zipfile.ZipFile(bytes_io, "w")
+        zip_file = zipfile.ZipFile(bytes_io, 'w')
         for file_name, bytes_blob in data_to_archive.items():
             zip_file.writestr(file_name, bytes_blob)
         zip_file.close()
@@ -40,7 +40,7 @@ class Archiver:
             bytes: The binary representation of the archive.
         """
         bytes_io = io.BytesIO()
-        with tarfile.open(fileobj=bytes_io, mode="w:gz") as tar:
+        with tarfile.open(fileobj=bytes_io, mode='w:gz') as tar:
             for file_name, cert_bytes in data_to_archive.items():
                 cert_io_bytes = io.BytesIO(cert_bytes)
                 cert_io_bytes_info = tarfile.TarInfo(file_name)
