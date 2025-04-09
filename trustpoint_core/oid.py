@@ -26,392 +26,390 @@ class NameOid(enum.Enum):
     full_name: str
     verbose_name: str
 
-    OBJECT_CLASS = ("2.5.4.0", "", "objectClass", "Object Class")
-    ALIASED_ENTRY_NAME = ("2.5.4.1", "", "aliasedEntryName", "Aliased Entry Name")
+    OBJECT_CLASS = ('2.5.4.0', '', 'objectClass', 'Object Class')
+    ALIASED_ENTRY_NAME = ('2.5.4.1', '', 'aliasedEntryName', 'Aliased Entry Name')
     KNOWLEDGE_INFORMATION = (
-        "2.5.4.2",
-        "",
-        "knowledgeInformation",
-        "Knowledge Information",
+        '2.5.4.2',
+        '',
+        'knowledgeInformation',
+        'Knowledge Information',
     )
-    COMMON_NAME = ("2.5.4.3", "CN", "commonName", "Common Name")
-    SURNAME = ("2.5.4.4", "SN", "Surname", "Surname")
-    SERIAL_NUMBER = ("2.5.4.5", "", "serialNumber", "Serial Number")
-    COUNTRY_NAME = ("2.5.4.6", "C", "countryName", "Country Name")
-    LOCALITY_NAME = ("2.5.4.7", "L", "localityName", "Locality Name")
+    COMMON_NAME = ('2.5.4.3', 'CN', 'commonName', 'Common Name')
+    SURNAME = ('2.5.4.4', 'SN', 'Surname', 'Surname')
+    SERIAL_NUMBER = ('2.5.4.5', '', 'serialNumber', 'Serial Number')
+    COUNTRY_NAME = ('2.5.4.6', 'C', 'countryName', 'Country Name')
+    LOCALITY_NAME = ('2.5.4.7', 'L', 'localityName', 'Locality Name')
     STATE_OR_PROVINCE_NAME = (
-        "2.5.4.8",
-        "ST",
-        "stateOrProvinceName",
-        "State or Province Name",
+        '2.5.4.8',
+        'ST',
+        'stateOrProvinceName',
+        'State or Province Name',
     )
-    STREET_ADDRESS = ("2.5.4.9", "", "streetAddress", "Street Address")
-    ORGANIZATION_NAME = ("2.5.4.10", "O", "organizationName", "Organization Name")
+    STREET_ADDRESS = ('2.5.4.9', '', 'streetAddress', 'Street Address')
+    ORGANIZATION_NAME = ('2.5.4.10', 'O', 'organizationName', 'Organization Name')
     ORGANIZATIONAL_UNIT_NAME = (
-        "2.5.4.11",
-        "OU",
-        "organizationalUnitName",
-        "Organizational Unit Name",
+        '2.5.4.11',
+        'OU',
+        'organizationalUnitName',
+        'Organizational Unit Name',
     )
-    TITLE = ("2.5.4.12", "T", "title", "Title")
-    DESCRIPTION = ("2.5.4.13", "", "description", "Description")
-    SEARCH_GUIDE = ("2.5.4.14", "", "searchGuide", "Search Guide")
-    BUSINESS_CATEGORY = ("2.5.4.15", "", "businessCategory", "Business Category")
-    POSTAL_ADDRESS = ("2.5.4.16", "", "postalAddress", "Postal Address")
-    POSTAL_CODE = ("2.5.4.17", "", "postalCode", "Postal Code")
-    POST_OFFICE_BOX = ("2.5.4.18", "", "postOfficeBox", "Post Office Box")
+    TITLE = ('2.5.4.12', 'T', 'title', 'Title')
+    DESCRIPTION = ('2.5.4.13', '', 'description', 'Description')
+    SEARCH_GUIDE = ('2.5.4.14', '', 'searchGuide', 'Search Guide')
+    BUSINESS_CATEGORY = ('2.5.4.15', '', 'businessCategory', 'Business Category')
+    POSTAL_ADDRESS = ('2.5.4.16', '', 'postalAddress', 'Postal Address')
+    POSTAL_CODE = ('2.5.4.17', '', 'postalCode', 'Postal Code')
+    POST_OFFICE_BOX = ('2.5.4.18', '', 'postOfficeBox', 'Post Office Box')
     PHYSICAL_DELIVERY_OFFICE_NAME = (
-        "2.5.4.19",
-        "",
-        "physicalDeliveryOfficeName",
-        "Physical Delivery Office Name",
+        '2.5.4.19',
+        '',
+        'physicalDeliveryOfficeName',
+        'Physical Delivery Office Name',
     )
-    TELEPHONE_NUMBER = ("2.5.4.20", "", "telephoneNumber", "Telephone Number")
-    TELEX_NUMBER = ("2.5.4.21", "", "telexNumber", "Telex Number")
+    TELEPHONE_NUMBER = ('2.5.4.20', '', 'telephoneNumber', 'Telephone Number')
+    TELEX_NUMBER = ('2.5.4.21', '', 'telexNumber', 'Telex Number')
     TELEX_TERMINAL_IDENTIFIER = (
-        "2.5.4.22",
-        "",
-        "telexTerminalIdentifier",
-        "Telex Terminal Identifier",
+        '2.5.4.22',
+        '',
+        'telexTerminalIdentifier',
+        'Telex Terminal Identifier',
     )
     FACSIMILE_TELEPHONE_NUMBER = (
-        "2.5.4.23",
-        "",
-        "facsimileTelephoneNumber",
-        "Facsimile Telephone Number",
+        '2.5.4.23',
+        '',
+        'facsimileTelephoneNumber',
+        'Facsimile Telephone Number',
     )
-    X121_Address = ("2.5.4.24", "", "x121Address", "X121 Address")
+    X121_Address = ('2.5.4.24', '', 'x121Address', 'X121 Address')
     INTERNATIONAL_ISD_NUMBER = (
-        "2.5.4.25",
-        "",
-        "internationalISDNumber",
-        "International ISD Number",
+        '2.5.4.25',
+        '',
+        'internationalISDNumber',
+        'International ISD Number',
     )
-    REGISTERED_ADDRESS = ("2.5.4.26", "", "registeredAddress", "Registered Address")
+    REGISTERED_ADDRESS = ('2.5.4.26', '', 'registeredAddress', 'Registered Address')
     DESTINATION_INDICATOR = (
-        "2.5.4.27",
-        "",
-        "destinationIndicator",
-        "Destination Indicator",
+        '2.5.4.27',
+        '',
+        'destinationIndicator',
+        'Destination Indicator',
     )
     PREFERRED_DELIVERY_METHOD = (
-        "2.5.4.28",
-        "",
-        "preferredDeliveryMethod",
-        "Preferred Delivery Method",
+        '2.5.4.28',
+        '',
+        'preferredDeliveryMethod',
+        'Preferred Delivery Method',
     )
     PRESENTATION_ADDRESS = (
-        "2.5.4.29",
-        "",
-        "presentationAddress",
-        "Presentation Address",
+        '2.5.4.29',
+        '',
+        'presentationAddress',
+        'Presentation Address',
     )
     SUPPORTED_APPLICATION_CONTEXT = (
-        "2.5.4.30",
-        "",
-        "supportedApplicationContext",
-        "Supported Application Context",
+        '2.5.4.30',
+        '',
+        'supportedApplicationContext',
+        'Supported Application Context',
     )
-    MEMBER = ("2.5.4.31", "", "member", "Member")
-    OWNER = ("2.5.4.32", "", "owner", "Owner")
-    ROLE_OCCUPANT = ("2.5.4.33", "", "roleOccupant", "Role Occupant")
-    SEE_ALSO = ("2.5.4.34", "", "seeAlso", "See Also")
-    USER_PASSWORD = ("2.5.4.35", "", "userPassword", "User Password")
-    USER_CERTIFICATE = ("2.5.4.36", "", "userCertificate", "User Certificate")
-    CA_Certificate = ("2.5.4.37", "", "cACertificate", "CA Certificate")
+    MEMBER = ('2.5.4.31', '', 'member', 'Member')
+    OWNER = ('2.5.4.32', '', 'owner', 'Owner')
+    ROLE_OCCUPANT = ('2.5.4.33', '', 'roleOccupant', 'Role Occupant')
+    SEE_ALSO = ('2.5.4.34', '', 'seeAlso', 'See Also')
+    USER_PASSWORD = ('2.5.4.35', '', 'userPassword', 'User Password')
+    USER_CERTIFICATE = ('2.5.4.36', '', 'userCertificate', 'User Certificate')
+    CA_Certificate = ('2.5.4.37', '', 'cACertificate', 'CA Certificate')
     AUTHORITY_REVOCATION_LIST = (
-        "2.5.4.38",
-        "",
-        "authorityRevocationList",
-        "Authority Revocation List",
+        '2.5.4.38',
+        '',
+        'authorityRevocationList',
+        'Authority Revocation List',
     )
     CERTIFICATE_REVOCATION_LIST = (
-        "2.5.4.39",
-        "",
-        "certificateRevocationList",
-        "Certificate Revocation List",
+        '2.5.4.39',
+        '',
+        'certificateRevocationList',
+        'Certificate Revocation List',
     )
     CROSS_CERTIFICATE_PAIR = (
-        "2.5.4.40",
-        "",
-        "crossCertificatePair",
-        "Cross Certificate Pair",
+        '2.5.4.40',
+        '',
+        'crossCertificatePair',
+        'Cross Certificate Pair',
     )
-    NAME = ("2.5.4.41", "", "name", "Name")
-    GIVEN_NAME = ("2.5.4.42", "GN", "givenName", "Given name")
-    INITIALS = ("2.5.4.43", "", "initials", "Initials")
+    NAME = ('2.5.4.41', '', 'name', 'Name')
+    GIVEN_NAME = ('2.5.4.42', 'GN', 'givenName', 'Given name')
+    INITIALS = ('2.5.4.43', '', 'initials', 'Initials')
     GENERATION_QUALIFIER = (
-        "2.5.4.44",
-        "",
-        "generationQualifier",
-        "Generation Qualifier",
+        '2.5.4.44',
+        '',
+        'generationQualifier',
+        'Generation Qualifier',
     )
     X500_UNIQUE_IDENTIFIER = (
-        "2.5.4.45",
-        "",
-        "x500UniqueIdentifier",
-        "X500 Unique identifier",
+        '2.5.4.45',
+        '',
+        'x500UniqueIdentifier',
+        'X500 Unique identifier',
     )
-    DN_QUALIFIER = ("2.5.4.46", "", "dnQualifier", "DN Qualifier")
+    DN_QUALIFIER = ('2.5.4.46', '', 'dnQualifier', 'DN Qualifier')
     ENHANCED_SEARCH_GUIDE = (
-        "2.5.4.47",
-        "",
-        "enhancedSearchGuide",
-        "Enhanced Search Guide",
+        '2.5.4.47',
+        '',
+        'enhancedSearchGuide',
+        'Enhanced Search Guide',
     )
     PROTOCOL_INFORMATION = (
-        "2.5.4.48",
-        "",
-        "protocolInformation",
-        "Protocol Information",
+        '2.5.4.48',
+        '',
+        'protocolInformation',
+        'Protocol Information',
     )
-    DISTINGUISHED_NAME = ("2.5.4.49", "", "distinguishedName", "Distinguished Name")
-    UNIQUE_MEMBER = ("2.5.4.50", "", "uniqueMember", "Unique Member")
-    HOUSE_IDENTIFIER = ("2.5.4.51", "", "houseIdentifier", "House Identifier")
+    DISTINGUISHED_NAME = ('2.5.4.49', '', 'distinguishedName', 'Distinguished Name')
+    UNIQUE_MEMBER = ('2.5.4.50', '', 'uniqueMember', 'Unique Member')
+    HOUSE_IDENTIFIER = ('2.5.4.51', '', 'houseIdentifier', 'House Identifier')
     SUPPORTED_ALGORITHMS = (
-        "2.5.4.52",
-        "",
-        "supportedAlgorithms",
-        "Supported Algorithms",
+        '2.5.4.52',
+        '',
+        'supportedAlgorithms',
+        'Supported Algorithms',
     )
     DELTA_REVOCATION_LIST = (
-        "2.5.4.53",
-        "",
-        "deltaRevocationList",
-        "Delta Revocation List",
+        '2.5.4.53',
+        '',
+        'deltaRevocationList',
+        'Delta Revocation List',
     )
-    DMD_NAME = ("2.5.4.54", "", "dmdName", "DMD Name")
-    CLEARANCE = ("2.5.4.55", "", "clearance", "Clearance")
-    DEFAULT_DIR_QOP = ("2.5.4.56", "", "defaultDirQop", "Default DIR QOP")
+    DMD_NAME = ('2.5.4.54', '', 'dmdName', 'DMD Name')
+    CLEARANCE = ('2.5.4.55', '', 'clearance', 'Clearance')
+    DEFAULT_DIR_QOP = ('2.5.4.56', '', 'defaultDirQop', 'Default DIR QOP')
     ATTRIBUTE_INTEGRITY_INFO = (
-        "2.5.4.57",
-        "",
-        "attributeIntegrityInfo",
-        "Attribute Integrity Info",
+        '2.5.4.57',
+        '',
+        'attributeIntegrityInfo',
+        'Attribute Integrity Info',
     )
     ATTRIBUTE_CERTIFICATE = (
-        "2.5.4.58",
-        "",
-        "attributeCertificate",
-        "Attribute Certificate",
+        '2.5.4.58',
+        '',
+        'attributeCertificate',
+        'Attribute Certificate',
     )
     ATTRIBUTE_CERTIFICATE_REVOCATION_LIST = (
-        "2.5.4.59",
-        "",
-        "attributeCertificateRevocationList",
-        "Attribute Certificate Revocation List",
+        '2.5.4.59',
+        '',
+        'attributeCertificateRevocationList',
+        'Attribute Certificate Revocation List',
     )
-    CONF_KEY_INFO = ("2.5.4.60", "", "confKeyInfo", "Conf Key Info")
-    AA_Certificate = ("2.5.4.61", "", "aACertificate", "AA Certificate")
+    CONF_KEY_INFO = ('2.5.4.60', '', 'confKeyInfo', 'Conf Key Info')
+    AA_Certificate = ('2.5.4.61', '', 'aACertificate', 'AA Certificate')
     ATTRIBUTE_DESCRIPTOR_CERTIFICATE = (
-        "2.5.4.62",
-        "",
-        "attributeDescriptorCertificate",
-        "Attribute Descriptor Certificate",
+        '2.5.4.62',
+        '',
+        'attributeDescriptorCertificate',
+        'Attribute Descriptor Certificate',
     )
     ATTRIBUTE_AUTHORITY_REVOCATION_LIST = (
-        "2.5.4.63",
-        "",
-        "attributeAuthorityRevocationList",
-        "Attribute Authority Revocation List",
+        '2.5.4.63',
+        '',
+        'attributeAuthorityRevocationList',
+        'Attribute Authority Revocation List',
     )
-    FAMILY_INFORMATION = ("2.5.4.64", "", "familyInformation", "Family Information")
-    PSEUDONYM = ("2.5.4.65", "", "pseudonym", "Pseudonym")
+    FAMILY_INFORMATION = ('2.5.4.64', '', 'familyInformation', 'Family Information')
+    PSEUDONYM = ('2.5.4.65', '', 'pseudonym', 'Pseudonym')
     COMMUNICATIONS_SERVICE = (
-        "2.5.4.66",
-        "",
-        "communicationsService",
-        "Communications Service",
+        '2.5.4.66',
+        '',
+        'communicationsService',
+        'Communications Service',
     )
     COMMUNICATIONS_NETWORK = (
-        "2.5.4.67",
-        "",
-        "communicationsNetwork",
-        "Communications Network",
+        '2.5.4.67',
+        '',
+        'communicationsNetwork',
+        'Communications Network',
     )
     CERTIFICATION_PRACTICE_STMT = (
-        "2.5.4.68",
-        "",
-        "certificationPracticeStmt",
-        "Certification Practice Statement",
+        '2.5.4.68',
+        '',
+        'certificationPracticeStmt',
+        'Certification Practice Statement',
     )
-    CERTIFICATE_POLICY = ("2.5.4.69", "", "certificatePolicy", "Certificate Policy")
-    PKI_PATH = ("2.5.4.70", "", "pkiPath", "PKI Path")
-    PRIVILEGE_POLICY = ("2.5.4.71", "", "privilegePolicy", "Privilege Policy")
-    ROLE = ("2.5.4.72", "", "role", "Role")
-    PMI_DELEGATION_PATH = ("2.5.4.73", "", "pmiDelegationPath", "PMI Delegation Path")
+    CERTIFICATE_POLICY = ('2.5.4.69', '', 'certificatePolicy', 'Certificate Policy')
+    PKI_PATH = ('2.5.4.70', '', 'pkiPath', 'PKI Path')
+    PRIVILEGE_POLICY = ('2.5.4.71', '', 'privilegePolicy', 'Privilege Policy')
+    ROLE = ('2.5.4.72', '', 'role', 'Role')
+    PMI_DELEGATION_PATH = ('2.5.4.73', '', 'pmiDelegationPath', 'PMI Delegation Path')
     PROTECTED_PRIVILEGE_POLICY = (
-        "2.5.4.74",
-        "",
-        "protectedPrivilegePolicy",
-        "Protected Privilege Policy",
+        '2.5.4.74',
+        '',
+        'protectedPrivilegePolicy',
+        'Protected Privilege Policy',
     )
-    XML_PRIVILEGE_INFO = ("2.5.4.75", "", "xMLPrivilegeInfo", "XML Privilege Info")
-    XML_PRIV_POLICY = ("2.5.4.76", "", "xmlPrivPolicy", "XML Privilege Policy")
-    UUID_PAIR = ("2.5.4.77", "", "uuidPair", "UUID Pair")
-    TAG_OID = ("2.5.4.78", "", "tagOid", "Tag OID")
-    UII_FORMAT = ("2.5.4.79", "", "uiiFormat", "Unique Item Identifier Format")
-    UII_IN_URN = ("2.5.4.80", "", "uiiInUrn", "Unique Item Identifier in URN")
-    CONTENT_URL = ("2.5.4.81", "", "contentUrl", "Content URL")
-    PERMISSION = ("2.5.4.82", "", "permission", "Permission")
-    URI = ("2.5.4.83", "", "uri", "Uniform Resource Identifier (URI)")
-    PWD_ATTRIBUTE = ("2.5.4.84", "", "pwdAttribute", "Password Attribute")
-    USER_PWD = ("2.5.4.85", "", "userPwd", "User Password")
-    URN = ("2.5.4.86", "", "urn", "Uniform Resource Name (URN)")
-    URL = ("2.5.4.87", "", "url", "Uniform Resource Locator (URL)")
+    XML_PRIVILEGE_INFO = ('2.5.4.75', '', 'xMLPrivilegeInfo', 'XML Privilege Info')
+    XML_PRIV_POLICY = ('2.5.4.76', '', 'xmlPrivPolicy', 'XML Privilege Policy')
+    UUID_PAIR = ('2.5.4.77', '', 'uuidPair', 'UUID Pair')
+    TAG_OID = ('2.5.4.78', '', 'tagOid', 'Tag OID')
+    UII_FORMAT = ('2.5.4.79', '', 'uiiFormat', 'Unique Item Identifier Format')
+    UII_IN_URN = ('2.5.4.80', '', 'uiiInUrn', 'Unique Item Identifier in URN')
+    CONTENT_URL = ('2.5.4.81', '', 'contentUrl', 'Content URL')
+    PERMISSION = ('2.5.4.82', '', 'permission', 'Permission')
+    URI = ('2.5.4.83', '', 'uri', 'Uniform Resource Identifier (URI)')
+    PWD_ATTRIBUTE = ('2.5.4.84', '', 'pwdAttribute', 'Password Attribute')
+    USER_PWD = ('2.5.4.85', '', 'userPwd', 'User Password')
+    URN = ('2.5.4.86', '', 'urn', 'Uniform Resource Name (URN)')
+    URL = ('2.5.4.87', '', 'url', 'Uniform Resource Locator (URL)')
     UTM_COORDINATES = (
-        "2.5.4.88",
-        "",
-        "utmCoordinates",
-        "UTM (Universal Transverse Mercator) Coordinates",
+        '2.5.4.88',
+        '',
+        'utmCoordinates',
+        'UTM (Universal Transverse Mercator) Coordinates',
     )
-    URN_C = ("2.5.4.89", "", "urnC", "Uniform Resource Locator Component (urnC)")
-    UII = ("2.5.4.90", "", "uii", "Unique Item Identifier (UII)")
-    EPC = ("2.5.4.91", "", "epc", "Electronic Product Code")
-    TAG_AFI = ("2.5.4.92", "", "tagAfi", "Tag Application Family Identifier (Tag AFI)")
-    EPC_FORMAT = ("2.5.4.93", "", "epcFormat", "Electronic Product Code Format")
-    EPC_IN_URN = ("2.5.4.94", "", "epcInUrn", "Electronic Product Code in URN")
-    LDAP_URL = ("2.5.4.95", "", "ldapUrl", "LDAP URL")
-    TAG_LOCATION = ("2.5.4.96", "", "tagLocation", "Tag Location")
+    URN_C = ('2.5.4.89', '', 'urnC', 'Uniform Resource Locator Component (urnC)')
+    UII = ('2.5.4.90', '', 'uii', 'Unique Item Identifier (UII)')
+    EPC = ('2.5.4.91', '', 'epc', 'Electronic Product Code')
+    TAG_AFI = ('2.5.4.92', '', 'tagAfi', 'Tag Application Family Identifier (Tag AFI)')
+    EPC_FORMAT = ('2.5.4.93', '', 'epcFormat', 'Electronic Product Code Format')
+    EPC_IN_URN = ('2.5.4.94', '', 'epcInUrn', 'Electronic Product Code in URN')
+    LDAP_URL = ('2.5.4.95', '', 'ldapUrl', 'LDAP URL')
+    TAG_LOCATION = ('2.5.4.96', '', 'tagLocation', 'Tag Location')
     ORGANIZATION_IDENTIFIER = (
-        "2.5.4.97",
-        "",
-        "organizationIdentifier",
-        "Organization Identifier",
+        '2.5.4.97',
+        '',
+        'organizationIdentifier',
+        'Organization Identifier',
     )
     COUNTRY_CODE_3C = (
-        "2.5.4.98",
-        "",
-        "countryCode3c",
-        "Country Code 3C (ISO 3166-1 alpha-3)",
+        '2.5.4.98',
+        '',
+        'countryCode3c',
+        'Country Code 3C (ISO 3166-1 alpha-3)',
     )
     COUNTRY_CODE_3N = (
-        "2.5.4.99",
-        "",
-        "countryCode3n",
-        "Country Code 3N ( ISO 3166-1 numeric-3)",
+        '2.5.4.99',
+        '',
+        'countryCode3n',
+        'Country Code 3N ( ISO 3166-1 numeric-3)',
     )
-    DNS_NAME = ("2.5.4.100", "", "dnsName", "DNS Name")
+    DNS_NAME = ('2.5.4.100', '', 'dnsName', 'DNS Name')
     EE_PK_CERTIFICATE_REVOCATION_LIST = (
-        "2.5.4.101",
-        "",
-        "eepkCertificateRevocationList",
-        "End-Entity Public-Key Certificate Revocation List",
+        '2.5.4.101',
+        '',
+        'eepkCertificateRevocationList',
+        'End-Entity Public-Key Certificate Revocation List',
     )
     EE_ATTR_CERTIFICATE_REVOCATION_LIST = (
-        "2.5.4.102",
-        "",
-        "eeAttrCertificateRevocationList",
-        "End-Entity Attribute Certificate Revocation List",
+        '2.5.4.102',
+        '',
+        'eeAttrCertificateRevocationList',
+        'End-Entity Attribute Certificate Revocation List',
     )
     SUPPORTED_PUBLIC_KEY_ALGORITHMS = (
-        "2.5.4.103",
-        "",
-        "supportedPublicKeyAlgorithms",
-        "Supported Public-Key Algorithms",
+        '2.5.4.103',
+        '',
+        'supportedPublicKeyAlgorithms',
+        'Supported Public-Key Algorithms',
     )
-    INT_EMAIL = ("2.5.4.104", "", "intEmail", "Internationalized Email Address")
-    JID = ("2.5.4.105", "", "jid", "Jabber Identifier")
-    OBJECT_IDENTIFIER = ("2.5.4.106", "", "objectIdentifier", "Object Identifier")
+    INT_EMAIL = ('2.5.4.104', '', 'intEmail', 'Internationalized Email Address')
+    JID = ('2.5.4.105', '', 'jid', 'Jabber Identifier')
+    OBJECT_IDENTIFIER = ('2.5.4.106', '', 'objectIdentifier', 'Object Identifier')
 
     # GOST Algorithms, RFC 9215, Russian, Broken Cypher!
     OGRN = (
-        "1.2.643.100.1",
-        "",
-        "ogrn",
-        "Main State Registration Number of juridical entities (OGRN)",
+        '1.2.643.100.1',
+        '',
+        'ogrn',
+        'Main State Registration Number of juridical entities (OGRN)',
     )
     SNILS = (
-        "1.2.643.100.3",
-        "",
-        "snils",
-        "Individual Insurance Account Number (SNILS)",
+        '1.2.643.100.3',
+        '',
+        'snils',
+        'Individual Insurance Account Number (SNILS)',
     )
     INNLE = (
-        "1.2.643.100.4",
-        "",
-        "innle",
-        "Individual Taxpayer Number (ITN) of the legal entity",
+        '1.2.643.100.4',
+        '',
+        'innle',
+        'Individual Taxpayer Number (ITN) of the legal entity',
     )
     OGRN_IP = (
-        "1.2.643.100.5",
-        "",
-        "ogrnip",
-        "Main State Registration Number of individual entrepreneurs",
+        '1.2.643.100.5',
+        '',
+        'ogrnip',
+        'Main State Registration Number of individual entrepreneurs',
     )
     IDENTIFICATION_KIND = (
-        "1.2.643.100.114",
-        "",
-        "identificationKind",
-        "Identification Kind",
+        '1.2.643.100.114',
+        '',
+        'identificationKind',
+        'Identification Kind',
     )
-    INN = ("1.2.643.3.131.1.1", "", "inn", "Individual Taxpayer Number (ITN, INN)")
+    INN = ('1.2.643.3.131.1.1', '', 'inn', 'Individual Taxpayer Number (ITN, INN)')
 
     # RFC 2985
     # emailAddress is deprecated, use altName extension
     EMAIL_ADDRESS = (
-        "1.2.840.113549.1.9.1",
-        "E",
-        "emailAddress",
-        "Email Address (Deprecated)",
+        '1.2.840.113549.1.9.1',
+        'E',
+        'emailAddress',
+        'Email Address (Deprecated)',
     )
     UNSTRUCTURED_NAME = (
-        "1.2.840.113549.1.9.2",
-        "",
-        "unstructuredName",
-        "Unstructured Name (FQDN)",
+        '1.2.840.113549.1.9.2',
+        '',
+        'unstructuredName',
+        'Unstructured Name (FQDN)',
     )
-    CONTENT_TYPE = ("1.2.840.113549.1.9.3", "", "contentType", "Content Type")
+    CONTENT_TYPE = ('1.2.840.113549.1.9.3', '', 'contentType', 'Content Type')
     UNSTRUCTURED_ADDRESS = (
-        "1.2.840.113549.1.9.8",
-        "",
-        "unstructuredAddress",
-        "Unstructured Address",
+        '1.2.840.113549.1.9.8',
+        '',
+        'unstructuredAddress',
+        'Unstructured Address',
     )
 
     # RFC 3039, RFC 2247, RFC 4519, RFC 5912
-    UID = ("0.9.2342.19200300.100.1.1", "UID", "uid", "User ID (UID)")
+    UID = ('0.9.2342.19200300.100.1.1', 'UID', 'uid', 'User ID (UID)')
     DOMAIN_COMPONENT = (
-        "0.9.2342.19200300.100.1.25",
-        "DC",
-        "domainComponent",
-        "Domain Component",
+        '0.9.2342.19200300.100.1.25',
+        'DC',
+        'domainComponent',
+        'Domain Component',
     )
 
     JURISDICTION_OF_INCORPORATION_LOCALITY_NAME = (
-        "1.3.6.1.4.1.311.60.2.1.1",
-        "",
-        "jurisdictionOfIncorporationLocalityName",
-        "Jurisdiction Of Incorporation Locality Name",
+        '1.3.6.1.4.1.311.60.2.1.1',
+        '',
+        'jurisdictionOfIncorporationLocalityName',
+        'Jurisdiction Of Incorporation Locality Name',
     )
     JURISDICTION_OF_INCORPORATION_STATE_OR_PROVINCE_NAME = (
-        "1.3.6.1.4.1.311.60.2.1.2",
-        "",
-        "jurisdictionOfIncorporationStateOrProvinceName",
-        "Jurisdiction Of Incorporation State Or Province Name",
+        '1.3.6.1.4.1.311.60.2.1.2',
+        '',
+        'jurisdictionOfIncorporationStateOrProvinceName',
+        'Jurisdiction Of Incorporation State Or Province Name',
     )
     JURISDICTION_OF_INCORPORATION_COUNTRY_NAME = (
-        "1.3.6.1.4.1.311.60.2.1.3",
-        "",
-        "jurisdictionOfIncorporationCountryName",
-        "Jurisdiction Of Incorporation Country Name",
+        '1.3.6.1.4.1.311.60.2.1.3',
+        '',
+        'jurisdictionOfIncorporationCountryName',
+        'Jurisdiction Of Incorporation Country Name',
     )
 
     # Spain related
-    DNI = ("1.3.6.1.4.1.19126.3", "", "dni", "DNI - National identity document (Spain)")
-    NSS = ("1.3.6.1.4.1.19126.4", "", "nss", "NSS - Social Security Number (Spain)")
+    DNI = ('1.3.6.1.4.1.19126.3', '', 'dni', 'DNI - National identity document (Spain)')
+    NSS = ('1.3.6.1.4.1.19126.4', '', 'nss', 'NSS - Social Security Number (Spain)')
     CIRCULATION_PERMIT_NUMBER = (
-        "1.3.6.1.4.1.19126.5",
-        "",
-        "circulationPermitNumber",
-        "Circulation Permit Number (SPAIN)",
+        '1.3.6.1.4.1.19126.5',
+        '',
+        'circulationPermitNumber',
+        'Circulation Permit Number (SPAIN)',
     )
-    CIF = ("1.3.6.1.4.1.19126.21", "", "cif", "CIF - Tax Identification Code (Spain)")
-    NIF = ("2.16.724.4.307", "", "nif", "NIF - Number of fiscal identification (Spain)")
+    CIF = ('1.3.6.1.4.1.19126.21', '', 'cif', 'CIF - Tax Identification Code (Spain)')
+    NIF = ('2.16.724.4.307', '', 'nif', 'NIF - Number of fiscal identification (Spain)')
 
-    def __new__(
-        cls, dotted_string: str, abbreviation: str, full_name: str, verbose_name: str
-    ) -> Self:
+    def __new__(cls, dotted_string: str, abbreviation: str, full_name: str, verbose_name: str) -> Self:
         """Sets the values for this multi value enum.
 
         Args:
@@ -435,38 +433,38 @@ class CertificateExtensionOid(enum.Enum):
     dotted_string: str
     verbose_name: str
 
-    SUBJECT_DIRECTORY_ATTRIBUTES = ("2.5.29.9", "Subject Directory Attributes")
-    SUBJECT_KEY_IDENTIFIER = ("2.5.29.14", "Subject Key Identifier")
-    KEY_USAGE = ("2.5.29.15", "Key Usage")
-    SUBJECT_ALTERNATIVE_NAME = ("2.5.29.17", "Subject Alternative Name")
-    ISSUER_ALTERNATIVE_NAME = ("2.5.29.18", "Issuer Alternative Name")
-    BASIC_CONSTRAINTS = ("2.5.29.19", "Basic Constraints")
-    NAME_CONSTRAINTS = ("2.5.29.30", "Name Constraints")
-    CRL_DISTRIBUTION_POINTS = ("2.5.29.31", "Crl Distribution Points")
-    CERTIFICATE_POLICIES = ("2.5.29.32", "Certificate Policies")
-    POLICY_MAPPINGS = ("2.5.29.33", "Policy Mappings")
-    AUTHORITY_KEY_IDENTIFIER = ("2.5.29.35", "Authority Key Identifier")
-    POLICY_CONSTRAINTS = ("2.5.29.36", "Policy Constraints")
-    EXTENDED_KEY_USAGE = ("2.5.29.37", "Extended Key Usage")
-    FRESHEST_CRL = ("2.5.29.46", "Freshest CRL")
-    INHIBIT_ANY_POLICY = ("2.5.29.54", "Inhibit Any Policy")
-    ISSUING_DISTRIBUTION_POINT = ("2.5.29.28", "Issuing Distribution Point")
-    AUTHORITY_INFORMATION_ACCESS = ("1.3.6.1.5.5.7.1.1", "Authority Information Access")
-    SUBJECT_INFORMATION_ACCESS = ("1.3.6.1.5.5.7.1.11", "Subject Information Access")
-    OCSP_NO_CHECK = ("1.3.6.1.5.5.7.48.1.5", "OCSP No Check")
-    TLS_FEATURE = ("1.3.6.1.5.5.7.1.24", "TLS Feature")
-    CRL_NUMBER = ("2.5.29.20", "CRL Number")
-    DELTA_CRL_INDICATOR = ("2.5.29.27", "Delta CRL Indicator")
+    SUBJECT_DIRECTORY_ATTRIBUTES = ('2.5.29.9', 'Subject Directory Attributes')
+    SUBJECT_KEY_IDENTIFIER = ('2.5.29.14', 'Subject Key Identifier')
+    KEY_USAGE = ('2.5.29.15', 'Key Usage')
+    SUBJECT_ALTERNATIVE_NAME = ('2.5.29.17', 'Subject Alternative Name')
+    ISSUER_ALTERNATIVE_NAME = ('2.5.29.18', 'Issuer Alternative Name')
+    BASIC_CONSTRAINTS = ('2.5.29.19', 'Basic Constraints')
+    NAME_CONSTRAINTS = ('2.5.29.30', 'Name Constraints')
+    CRL_DISTRIBUTION_POINTS = ('2.5.29.31', 'Crl Distribution Points')
+    CERTIFICATE_POLICIES = ('2.5.29.32', 'Certificate Policies')
+    POLICY_MAPPINGS = ('2.5.29.33', 'Policy Mappings')
+    AUTHORITY_KEY_IDENTIFIER = ('2.5.29.35', 'Authority Key Identifier')
+    POLICY_CONSTRAINTS = ('2.5.29.36', 'Policy Constraints')
+    EXTENDED_KEY_USAGE = ('2.5.29.37', 'Extended Key Usage')
+    FRESHEST_CRL = ('2.5.29.46', 'Freshest CRL')
+    INHIBIT_ANY_POLICY = ('2.5.29.54', 'Inhibit Any Policy')
+    ISSUING_DISTRIBUTION_POINT = ('2.5.29.28', 'Issuing Distribution Point')
+    AUTHORITY_INFORMATION_ACCESS = ('1.3.6.1.5.5.7.1.1', 'Authority Information Access')
+    SUBJECT_INFORMATION_ACCESS = ('1.3.6.1.5.5.7.1.11', 'Subject Information Access')
+    OCSP_NO_CHECK = ('1.3.6.1.5.5.7.48.1.5', 'OCSP No Check')
+    TLS_FEATURE = ('1.3.6.1.5.5.7.1.24', 'TLS Feature')
+    CRL_NUMBER = ('2.5.29.20', 'CRL Number')
+    DELTA_CRL_INDICATOR = ('2.5.29.27', 'Delta CRL Indicator')
     PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS = (
-        "1.3.6.1.4.1.11129.2.4.2",
-        "Precert Signed Certificate Timestamps",
+        '1.3.6.1.4.1.11129.2.4.2',
+        'Precert Signed Certificate Timestamps',
     )
-    PRECERT_POISON = ("1.3.6.1.4.1.11129.2.4.3", "Precert Poison")
+    PRECERT_POISON = ('1.3.6.1.4.1.11129.2.4.3', 'Precert Poison')
     SIGNED_CERTIFICATE_TIMESTAMPS = (
-        "1.3.6.1.4.1.11129.2.4.5",
-        "Signed Certificate Timestamps",
+        '1.3.6.1.4.1.11129.2.4.5',
+        'Signed Certificate Timestamps',
     )
-    MS_CERTIFICATE_TEMPLATE = ("1.3.6.1.4.1.311.21.7", "Microsoft Certificate Template")
+    MS_CERTIFICATE_TEMPLATE = ('1.3.6.1.4.1.311.21.7', 'Microsoft Certificate Template')
 
     def __new__(cls, dotted_string: str, verbose_name: str) -> Self:
         """Sets the values for this multi value enum.
@@ -491,44 +489,44 @@ class NamedCurve(enum.Enum):
     curve: Optional[type[ec.EllipticCurve]]
     ossl_curve_name: str
 
-    NONE = ("None", "None", 0, None, "")
-    SECP192R1 = ("1.2.840.10045.3.1.1", "SECP192R1", 192, ec.SECP192R1, "prime192v1")
-    SECP224R1 = ("1.3.132.0.33", "SECP224R1", 224, ec.SECP224R1, "secp224r1")
-    SECP256K1 = ("1.3.132.0.10", "SECP256K1", 256, ec.SECP256K1, "secp256k1")
-    SECP256R1 = ("1.2.840.10045.3.1.7", "SECP256R1", 256, ec.SECP256R1, "prime256v1")
-    SECP384R1 = ("1.3.132.0.34", "SECP384R1", 384, ec.SECP384R1, "secp384r1")
-    SECP521R1 = ("1.3.132.0.35", "SECP521R1", 521, ec.SECP521R1, "secp521r1")
+    NONE = ('None', 'None', 0, None, '')
+    SECP192R1 = ('1.2.840.10045.3.1.1', 'SECP192R1', 192, ec.SECP192R1, 'prime192v1')
+    SECP224R1 = ('1.3.132.0.33', 'SECP224R1', 224, ec.SECP224R1, 'secp224r1')
+    SECP256K1 = ('1.3.132.0.10', 'SECP256K1', 256, ec.SECP256K1, 'secp256k1')
+    SECP256R1 = ('1.2.840.10045.3.1.7', 'SECP256R1', 256, ec.SECP256R1, 'prime256v1')
+    SECP384R1 = ('1.3.132.0.34', 'SECP384R1', 384, ec.SECP384R1, 'secp384r1')
+    SECP521R1 = ('1.3.132.0.35', 'SECP521R1', 521, ec.SECP521R1, 'secp521r1')
     BRAINPOOLP256R1 = (
-        "1.3.36.3.3.2.8.1.1.7",
-        "BRAINPOOLP256R1",
+        '1.3.36.3.3.2.8.1.1.7',
+        'BRAINPOOLP256R1',
         256,
         ec.BrainpoolP256R1,
-        "brainpoolP256r1",
+        'brainpoolP256r1',
     )
     BRAINPOOLP384R1 = (
-        "1.3.36.3.3.2.8.1.1.11",
-        "BRAINPOOLP384R1",
+        '1.3.36.3.3.2.8.1.1.11',
+        'BRAINPOOLP384R1',
         384,
         ec.BrainpoolP384R1,
-        "brainpoolP384r1",
+        'brainpoolP384r1',
     )
     BRAINPOOLP512R1 = (
-        "1.3.36.3.3.2.8.1.1.13",
-        "BRAINPOOLP512R1",
+        '1.3.36.3.3.2.8.1.1.13',
+        'BRAINPOOLP512R1',
         512,
         ec.BrainpoolP512R1,
-        "brainpoolP512r1",
+        'brainpoolP512r1',
     )
-    SECT163K1 = ("1.3.132.0.1", "SECT163K1", 163, ec.SECT163K1, "sect163r1")
-    SECT163R2 = ("1.3.132.0.15", "SECT163R2", 163, ec.SECT163R2, "sect163r2")
-    SECT233K1 = ("1.3.132.0.26", "SECT233K1", 233, ec.SECT233K1, "sect233k1")
-    SECT233R1 = ("1.3.132.0.27", "SECT233R1", 233, ec.SECT233R1, "sect233r1")
-    SECT283K1 = ("1.3.132.0.16", "SECT283K1", 283, ec.SECT283K1, "sect283k1")
-    SECT283R1 = ("1.3.132.0.17", "SECT283R1", 283, ec.SECT283R1, "sect283r1")
-    SECT409K1 = ("1.3.132.0.36", "SECT409K1", 409, ec.SECT409K1, "sect409k1")
-    SECT409R1 = ("1.3.132.0.37", "SECT409R1", 409, ec.SECT409R1, "sect409r1")
-    SECT571K1 = ("1.3.132.0.38", "SECT571K1", 571, ec.SECT571K1, "sect571k1")
-    SECT571R1 = ("1.3.132.0.39", "SECT571R1", 570, ec.SECT571R1, "sect571r1")
+    SECT163K1 = ('1.3.132.0.1', 'SECT163K1', 163, ec.SECT163K1, 'sect163r1')
+    SECT163R2 = ('1.3.132.0.15', 'SECT163R2', 163, ec.SECT163R2, 'sect163r2')
+    SECT233K1 = ('1.3.132.0.26', 'SECT233K1', 233, ec.SECT233K1, 'sect233k1')
+    SECT233R1 = ('1.3.132.0.27', 'SECT233R1', 233, ec.SECT233R1, 'sect233r1')
+    SECT283K1 = ('1.3.132.0.16', 'SECT283K1', 283, ec.SECT283K1, 'sect283k1')
+    SECT283R1 = ('1.3.132.0.17', 'SECT283R1', 283, ec.SECT283R1, 'sect283r1')
+    SECT409K1 = ('1.3.132.0.36', 'SECT409K1', 409, ec.SECT409K1, 'sect409k1')
+    SECT409R1 = ('1.3.132.0.37', 'SECT409R1', 409, ec.SECT409R1, 'sect409r1')
+    SECT571K1 = ('1.3.132.0.38', 'SECT571K1', 571, ec.SECT571K1, 'sect571k1')
+    SECT571R1 = ('1.3.132.0.39', 'SECT571R1', 570, ec.SECT571R1, 'sect571r1')
 
     def __new__(
         cls,
@@ -559,9 +557,9 @@ class NamedCurve(enum.Enum):
 class RsaPaddingScheme(enum.Enum):
     """RSA Padding Scheme Enum."""
 
-    NONE = "None"
-    PKCS1v15 = "PKCS#1 v1.5"
-    PSS = "PSS"
+    NONE = 'None'
+    PKCS1v15 = 'PKCS#1 v1.5'
+    PSS = 'PSS'
 
 
 class PublicKeyAlgorithmOid(enum.Enum):
@@ -570,9 +568,9 @@ class PublicKeyAlgorithmOid(enum.Enum):
     dotted_string: str
     verbose_name: str
 
-    NONE = ("NONE", "None")
-    ECC = ("1.2.840.10045.2.1", "ECC")
-    RSA = ("1.2.840.113549.1.1.1", "RSA")
+    NONE = ('NONE', 'None')
+    ECC = ('1.2.840.10045.2.1', 'ECC')
+    RSA = ('1.2.840.113549.1.1.1', 'RSA')
 
     # TODO(AlexHx8472): Support ED25519, ED448
 
@@ -627,7 +625,7 @@ class PublicKeyAlgorithmOid(enum.Enum):
             return cls.RSA
         if isinstance(public_key, ec.EllipticCurvePublicKey):
             return cls.ECC
-        err_msg = "Unsupported key type, expected RSA or ECC key."
+        err_msg = 'Unsupported key type, expected RSA or ECC key.'
         raise TypeError(err_msg)
 
 
@@ -638,24 +636,24 @@ class HashAlgorithm(enum.Enum):
     verbose_name: str
     hash_algorithm: type[hashes.HashAlgorithm] | None
 
-    MD5 = ("1.2.840.113549.2.5", "MD5", hashes.MD5)
+    MD5 = ('1.2.840.113549.2.5', 'MD5', hashes.MD5)
 
-    SHA1 = ("1.3.14.3.2.26", "SHA1", hashes.SHA1)
+    SHA1 = ('1.3.14.3.2.26', 'SHA1', hashes.SHA1)
 
-    SHA224 = ("2.16.840.1.101.3.4.2.4", "SHA224", hashes.SHA224)
-    SHA256 = ("2.16.840.1.101.3.4.2.1", "SHA256", hashes.SHA256)
-    SHA384 = ("2.16.840.1.101.3.4.2.2", "SHA384", hashes.SHA384)
-    SHA512 = ("2.16.840.1.101.3.4.2.3", "SHA512", hashes.SHA512)
+    SHA224 = ('2.16.840.1.101.3.4.2.4', 'SHA224', hashes.SHA224)
+    SHA256 = ('2.16.840.1.101.3.4.2.1', 'SHA256', hashes.SHA256)
+    SHA384 = ('2.16.840.1.101.3.4.2.2', 'SHA384', hashes.SHA384)
+    SHA512 = ('2.16.840.1.101.3.4.2.3', 'SHA512', hashes.SHA512)
 
     # SHA-3 family
-    SHA3_224 = ("2.16.840.1.101.3.4.2.7", "SHA3-224", hashes.SHA3_224)
-    SHA3_256 = ("2.16.840.1.101.3.4.2.8", "SHA3-256", hashes.SHA3_256)
-    SHA3_384 = ("2.16.840.1.101.3.4.2.9", "SHA3-384", hashes.SHA3_384)
-    SHA3_512 = ("2.16.840.1.101.3.4.2.10", "SHA3-512", hashes.SHA3_512)
+    SHA3_224 = ('2.16.840.1.101.3.4.2.7', 'SHA3-224', hashes.SHA3_224)
+    SHA3_256 = ('2.16.840.1.101.3.4.2.8', 'SHA3-256', hashes.SHA3_256)
+    SHA3_384 = ('2.16.840.1.101.3.4.2.9', 'SHA3-384', hashes.SHA3_384)
+    SHA3_512 = ('2.16.840.1.101.3.4.2.10', 'SHA3-512', hashes.SHA3_512)
 
     # SHAKE algorithms
-    SHAKE128 = ("2.16.840.1.101.3.4.2.11", "Shake-128", hashes.SHAKE128)
-    SHAKE256 = ("2.16.840.1.101.3.4.2.12", "Shake-256", hashes.SHAKE256)
+    SHAKE128 = ('2.16.840.1.101.3.4.2.11', 'Shake-128', hashes.SHAKE128)
+    SHAKE256 = ('2.16.840.1.101.3.4.2.12', 'Shake-256', hashes.SHAKE256)
 
     def __new__(
         cls,
@@ -688,78 +686,78 @@ class AlgorithmIdentifier(enum.Enum):
     hash_algorithm: HashAlgorithm | None
 
     RSA_MD5 = (
-        "1.2.840.113549.1.1.4",
-        "RSA with MD5",
+        '1.2.840.113549.1.1.4',
+        'RSA with MD5',
         PublicKeyAlgorithmOid.RSA,
         RsaPaddingScheme.PKCS1v15,
         HashAlgorithm.MD5,
     )
     RSA_SHA1 = (
-        "1.2.840.113549.1.1.5",
-        "RSA with SHA1",
+        '1.2.840.113549.1.1.5',
+        'RSA with SHA1',
         PublicKeyAlgorithmOid.RSA,
         RsaPaddingScheme.PKCS1v15,
         HashAlgorithm.SHA1,
     )
     RSA_SHA1_ALT = (
-        "1.3.14.3.2.29",
-        "RSA with SHA1",
+        '1.3.14.3.2.29',
+        'RSA with SHA1',
         PublicKeyAlgorithmOid.RSA,
         RsaPaddingScheme.PKCS1v15,
         HashAlgorithm.SHA1,
     )
     RSA_SHA224 = (
-        "1.3.14.3.2.29",
-        "RSA with SHA224",
+        '1.3.14.3.2.29',
+        'RSA with SHA224',
         PublicKeyAlgorithmOid.RSA,
         RsaPaddingScheme.PKCS1v15,
         HashAlgorithm.SHA224,
     )
     RSA_SHA256 = (
-        "1.2.840.113549.1.1.11",
-        "RSA with SHA256",
+        '1.2.840.113549.1.1.11',
+        'RSA with SHA256',
         PublicKeyAlgorithmOid.RSA,
         RsaPaddingScheme.PKCS1v15,
         HashAlgorithm.SHA256,
     )
     RSA_SHA384 = (
-        "1.2.840.113549.1.1.12",
-        "RSA with SHA384",
+        '1.2.840.113549.1.1.12',
+        'RSA with SHA384',
         PublicKeyAlgorithmOid.RSA,
         RsaPaddingScheme.PKCS1v15,
         HashAlgorithm.SHA384,
     )
     RSA_SHA512 = (
-        "1.2.840.113549.1.1.13",
-        "RSA with SHA512",
+        '1.2.840.113549.1.1.13',
+        'RSA with SHA512',
         PublicKeyAlgorithmOid.RSA,
         RsaPaddingScheme.PKCS1v15,
         HashAlgorithm.SHA512,
     )
     RSA_SHA3_224 = (
-        "2.16.840.1.101.3.4.3.13",
-        "RSA with SHA3-224",
+        '2.16.840.1.101.3.4.3.13',
+        'RSA with SHA3-224',
         PublicKeyAlgorithmOid.RSA,
         RsaPaddingScheme.PKCS1v15,
         HashAlgorithm.SHA3_224,
     )
     RSA_SHA3_256 = (
-        "2.16.840.1.101.3.4.3.14",
-        "RSA with SHA3-256",
+        '2.16.840.1.101.3.4.3.14',
+        'RSA with SHA3-256',
         PublicKeyAlgorithmOid.RSA,
         RsaPaddingScheme.PKCS1v15,
         HashAlgorithm.SHA3_256,
     )
     RSA_SHA3_384 = (
-        "2.16.840.1.101.3.4.3.15",
-        "RSA with SHA3-384",
+        '2.16.840.1.101.3.4.3.15',
+        'RSA with SHA3-384',
         PublicKeyAlgorithmOid.RSA,
         RsaPaddingScheme.PKCS1v15,
         HashAlgorithm.SHA3_384,
     )
     RSA_SHA3_512 = (
-        "2.16.840.1.101.3.4.3.16",
-        "RSA with SHA3-512",
+        '2.16.840.1.101.3.4.3.16',
+        'RSA with SHA3-512',
         PublicKeyAlgorithmOid.RSA,
         RsaPaddingScheme.PKCS1v15,
         HashAlgorithm.SHA3_512,
@@ -768,71 +766,71 @@ class AlgorithmIdentifier(enum.Enum):
     # TODO(AlexHx8472): Add RSA PSS support.
 
     ECDSA_SHA1 = (
-        "1.2.840.10045.4.1",
-        "ECDSA with SHA1",
+        '1.2.840.10045.4.1',
+        'ECDSA with SHA1',
         PublicKeyAlgorithmOid.ECC,
         RsaPaddingScheme.NONE,
         HashAlgorithm.SHA1,
     )
     ECDSA_SHA224 = (
-        "1.2.840.10045.4.3.1",
-        "ECDSA with SHA224",
+        '1.2.840.10045.4.3.1',
+        'ECDSA with SHA224',
         PublicKeyAlgorithmOid.ECC,
         RsaPaddingScheme.NONE,
         HashAlgorithm.SHA224,
     )
     ECDSA_SHA256 = (
-        "1.2.840.10045.4.3.2",
-        "ECDSA with SHA256",
+        '1.2.840.10045.4.3.2',
+        'ECDSA with SHA256',
         PublicKeyAlgorithmOid.ECC,
         RsaPaddingScheme.NONE,
         HashAlgorithm.SHA256,
     )
     ECDSA_SHA384 = (
-        "1.2.840.10045.4.3.3",
-        "ECDSA with SHA384",
+        '1.2.840.10045.4.3.3',
+        'ECDSA with SHA384',
         PublicKeyAlgorithmOid.ECC,
         RsaPaddingScheme.NONE,
         HashAlgorithm.SHA384,
     )
     ECDSA_SHA512 = (
-        "1.2.840.10045.4.3.4",
-        "ECDSA with SHA512",
+        '1.2.840.10045.4.3.4',
+        'ECDSA with SHA512',
         PublicKeyAlgorithmOid.ECC,
         RsaPaddingScheme.NONE,
         HashAlgorithm.SHA512,
     )
     ECDSA_SHA3_224 = (
-        "2.16.840.1.101.3.4.3.9",
-        "ECDSA with SHA3-224",
+        '2.16.840.1.101.3.4.3.9',
+        'ECDSA with SHA3-224',
         PublicKeyAlgorithmOid.ECC,
         RsaPaddingScheme.NONE,
         HashAlgorithm.SHA3_224,
     )
     ECDSA_SHA3_256 = (
-        "2.16.840.1.101.3.4.3.10",
-        "ECDSA with SHA3-256",
+        '2.16.840.1.101.3.4.3.10',
+        'ECDSA with SHA3-256',
         PublicKeyAlgorithmOid.ECC,
         RsaPaddingScheme.NONE,
         HashAlgorithm.SHA3_256,
     )
     ECDSA_SHA3_384 = (
-        "2.16.840.1.101.3.4.3.11",
-        "ECDSA with SHA3-384",
+        '2.16.840.1.101.3.4.3.11',
+        'ECDSA with SHA3-384',
         PublicKeyAlgorithmOid.ECC,
         RsaPaddingScheme.NONE,
         HashAlgorithm.SHA3_384,
     )
     ECDSA_SHA3_512 = (
-        "2.16.840.1.101.3.4.3.12",
-        "ECDSA with SHA3-512",
+        '2.16.840.1.101.3.4.3.12',
+        'ECDSA with SHA3-512',
         PublicKeyAlgorithmOid.ECC,
         RsaPaddingScheme.NONE,
         HashAlgorithm.SHA3_512,
     )
     PASSWORD_BASED_MAC = (
-        "1.2.840.113533.7.66.13",
-        "Password Based MAC",
+        '1.2.840.113533.7.66.13',
+        'Password Based MAC',
         PublicKeyAlgorithmOid.NONE,
         RsaPaddingScheme.NONE,
         None,
@@ -875,12 +873,9 @@ class AlgorithmIdentifier(enum.Enum):
             The matching PublicKeyAlgorithmOid Enum.
         """
         for member in cls:
-            if (
-                member.dotted_string
-                == certificate.signature_algorithm_oid.dotted_string
-            ):
+            if member.dotted_string == certificate.signature_algorithm_oid.dotted_string:
                 return member
-        err_msg = f"AlgorithmIdentifier {certificate.signature_algorithm_oid.dotted_string} is unkown."
+        err_msg = f'AlgorithmIdentifier {certificate.signature_algorithm_oid.dotted_string} is unkown.'
         raise ValueError(err_msg)
 
 
@@ -890,19 +885,19 @@ class HmacAlgorithm(enum.Enum):
     dotted_string: str
     hash_algorithm: HashAlgorithm
 
-    HMAC_MD5 = ("1.3.6.1.5.5.8.1.1", HashAlgorithm.MD5)
+    HMAC_MD5 = ('1.3.6.1.5.5.8.1.1', HashAlgorithm.MD5)
 
-    HMAC_SHA1 = ("1.3.6.1.5.5.8.1.2", HashAlgorithm.SHA1)
+    HMAC_SHA1 = ('1.3.6.1.5.5.8.1.2', HashAlgorithm.SHA1)
 
-    HMAC_SHA224 = ("1.3.6.1.5.5.8.1.4", HashAlgorithm.SHA224)
-    HMAC_SHA256 = ("1.3.6.1.5.5.8.1.5", HashAlgorithm.SHA256)
-    HMAC_SHA384 = ("1.3.6.1.5.5.8.1.6", HashAlgorithm.SHA384)
-    HMAC_SHA512 = ("1.3.6.1.5.5.8.1.7", HashAlgorithm.SHA512)
+    HMAC_SHA224 = ('1.3.6.1.5.5.8.1.4', HashAlgorithm.SHA224)
+    HMAC_SHA256 = ('1.3.6.1.5.5.8.1.5', HashAlgorithm.SHA256)
+    HMAC_SHA384 = ('1.3.6.1.5.5.8.1.6', HashAlgorithm.SHA384)
+    HMAC_SHA512 = ('1.3.6.1.5.5.8.1.7', HashAlgorithm.SHA512)
 
-    HMAC_SHA3_224 = ("2.16.840.1.101.3.4.2.13", HashAlgorithm.SHA3_224)
-    HMAC_SHA3_256 = ("2.16.840.1.101.3.4.2.14", HashAlgorithm.SHA3_256)
-    HMAC_SHA3_384 = ("2.16.840.1.101.3.4.2.15", HashAlgorithm.SHA3_384)
-    HMAC_SHA3_512 = ("2.16.840.1.101.3.4.2.16", HashAlgorithm.SHA3_512)
+    HMAC_SHA3_224 = ('2.16.840.1.101.3.4.2.13', HashAlgorithm.SHA3_224)
+    HMAC_SHA3_256 = ('2.16.840.1.101.3.4.2.14', HashAlgorithm.SHA3_256)
+    HMAC_SHA3_384 = ('2.16.840.1.101.3.4.2.15', HashAlgorithm.SHA3_384)
+    HMAC_SHA3_512 = ('2.16.840.1.101.3.4.2.16', HashAlgorithm.SHA3_512)
 
     # No HMAC with SHAKE
 
@@ -944,17 +939,17 @@ class PublicKeyInfo:
         self._key_size = key_size
         if self._public_key_algorithm_oid == PublicKeyAlgorithmOid.RSA:
             if self._key_size is None:
-                err_msg = "Missing key size for RSA key."
+                err_msg = 'Missing key size for RSA key.'
                 raise ValueError(err_msg)
             if self._key_size < RSA_MIN_KEY_SIZE:
-                err_msg = "RSA key size must at least be 2048 bits."
+                err_msg = 'RSA key size must at least be 2048 bits.'
                 raise ValueError(err_msg)
             if named_curve is not None:
-                err_msg = "RSA keys cannot have a named curve associated with it."
+                err_msg = 'RSA keys cannot have a named curve associated with it.'
                 raise ValueError(err_msg)
         elif self._public_key_algorithm_oid == PublicKeyAlgorithmOid.ECC:
             if named_curve is None:
-                err_msg = "ECC key must have a named curve associated with it."
+                err_msg = 'ECC key must have a named curve associated with it.'
                 raise ValueError(err_msg)
             self._key_size = named_curve.key_size
             self._named_curve = named_curve
@@ -983,13 +978,13 @@ class PublicKeyInfo:
             A human-readable string representation of this SignatureSuite.
         """
         if self.public_key_algorithm_oid == PublicKeyAlgorithmOid.RSA:
-            return f"RSA-{self.key_size}"
+            return f'RSA-{self.key_size}'
         if self.public_key_algorithm_oid == PublicKeyAlgorithmOid.ECC:
             if self.named_curve is None:
-                err_msg = "Failed to determine named curve."
+                err_msg = 'Failed to determine named curve.'
                 raise ValueError(err_msg)
-            return f"ECC-{self.named_curve.verbose_name}"
-        return "Invalid Signature Suite"
+            return f'ECC-{self.named_curve.verbose_name}'
+        return 'Invalid Signature Suite'
 
     @property
     def public_key_algorithm_oid(self) -> PublicKeyAlgorithmOid:
@@ -1042,7 +1037,7 @@ class PublicKeyInfo:
                 key_size=public_key.key_size,
                 named_curve=cast(NamedCurve, NamedCurve[public_key.curve.name.upper()]),
             )
-        err_msg = "Unsupported public key type found. Must be RSA or ECC key."
+        err_msg = 'Unsupported public key type found. Must be RSA or ECC key.'
         raise TypeError(err_msg)
 
     @classmethod
@@ -1082,9 +1077,7 @@ class SignatureSuite:
     _public_key_info: PublicKeyInfo
     _algorithm_identifier: AlgorithmIdentifier
 
-    def __init__(
-        self, algorithm_identifier: AlgorithmIdentifier, public_key_info: PublicKeyInfo
-    ) -> None:
+    def __init__(self, algorithm_identifier: AlgorithmIdentifier, public_key_info: PublicKeyInfo) -> None:
         """Initializes a SignatureSuite object.
 
         Args:
@@ -1108,10 +1101,7 @@ class SignatureSuite:
         if not isinstance(other, SignatureSuite):
             return NotImplemented
 
-        return (
-            self.public_key_info == other.public_key_info
-            and self.algorithm_identifier == other.algorithm_identifier
-        )
+        return self.public_key_info == other.public_key_info and self.algorithm_identifier == other.algorithm_identifier
 
     def __str__(self) -> str:
         """Constructs a human-readable string representation of this SignatureSuite.
@@ -1120,18 +1110,16 @@ class SignatureSuite:
             A human-readable string representation of this SignatureSuite.
         """
         if self.algorithm_identifier.hash_algorithm is None:
-            err_msg = "Failed to determine hash algorithm."
+            err_msg = 'Failed to determine hash algorithm.'
             raise ValueError(err_msg)
         hash_alg_name = self.algorithm_identifier.hash_algorithm.verbose_name
         if self.public_key_info.public_key_algorithm_oid == PublicKeyAlgorithmOid.RSA:
-            return f"RSA-{self.public_key_info.key_size}-{hash_alg_name}"
+            return f'RSA-{self.public_key_info.key_size}-{hash_alg_name}'
         if self.public_key_info.public_key_algorithm_oid == PublicKeyAlgorithmOid.ECC:
             if self.public_key_info.named_curve is None:
-                raise ValueError("Named curve not found.")
-            return (
-                f"ECC-{self.public_key_info.named_curve.verbose_name}-{hash_alg_name}"
-            )
-        return "Invalid Signature Suite"
+                raise ValueError('Named curve not found.')
+            return f'ECC-{self.public_key_info.named_curve.verbose_name}-{hash_alg_name}'
+        return 'Invalid Signature Suite'
 
     def _validate_consistency(self) -> None:
         """Validates if the PublicKeyInfo details matches the AlgorithmIdentifier.
@@ -1142,13 +1130,10 @@ class SignatureSuite:
         Raises:
             ValueError: If the consistency check failed.
         """
-        if (
-            self.algorithm_identifier.public_key_algo_oid
-            != self.public_key_info.public_key_algorithm_oid
-        ):
+        if self.algorithm_identifier.public_key_algo_oid != self.public_key_info.public_key_algorithm_oid:
             err_msg = (
-                f"Signature algorithm uses {self.algorithm_identifier.public_key_algo_oid.name}, "
-                f"but the public key is a {self.public_key_info.public_key_algorithm_oid.name} key."
+                f'Signature algorithm uses {self.algorithm_identifier.public_key_algo_oid.name}, '
+                f'but the public key is a {self.public_key_info.public_key_algorithm_oid.name} key.'
             )
             raise ValueError(err_msg)
 
@@ -1221,9 +1206,7 @@ class SignatureSuite:
         """
         return self.public_key_matches_signature_suite(private_key.public_key())
 
-    def certificate_matches_signature_suite(
-        self, certificate: x509.Certificate
-    ) -> bool:
+    def certificate_matches_signature_suite(self, certificate: x509.Certificate) -> bool:
         """Checks if the provided certificate can be used with this SignatureSuite.
 
         Args:
@@ -1260,12 +1243,10 @@ class KeyPairGenerator:
             TypeError: If the key type of the provided public key is not supported.
         """
         if isinstance(public_key, rsa.RSAPublicKey):
-            return rsa.generate_private_key(
-                public_exponent=65537, key_size=public_key.key_size
-            )
+            return rsa.generate_private_key(public_exponent=65537, key_size=public_key.key_size)
         if isinstance(public_key, ec.EllipticCurvePublicKey):
             return ec.generate_private_key(public_key.curve)
-        err_msg = "Unsupported key type found."
+        err_msg = 'Unsupported key type found.'
         raise TypeError(err_msg)
 
     @classmethod
@@ -1284,9 +1265,7 @@ class KeyPairGenerator:
         return cls.generate_key_pair_for_public_key(private_key.public_key())
 
     @classmethod
-    def generate_key_pair_for_certificate(
-        cls, certificate: x509.Certificate
-    ) -> PrivateKey:
+    def generate_key_pair_for_certificate(cls, certificate: x509.Certificate) -> PrivateKey:
         """Generates a new key-pair with the same type and key size as the public key present in the certificate.
 
         Args:
@@ -1318,39 +1297,29 @@ class KeyPairGenerator:
         """
         if public_key_info.public_key_algorithm_oid == PublicKeyAlgorithmOid.RSA:
             if public_key_info.key_size is None:
-                err_msg = "Failed to determine key size."
+                err_msg = 'Failed to determine key size.'
                 raise ValueError(err_msg)
             if public_key_info.key_size < RSA_MIN_KEY_SIZE:
                 err_msg = (
-                    f"RSA key size must be at least {RSA_MIN_KEY_SIZE} bits, "
-                    f"but found {public_key_info.key_size} bits."
+                    f'RSA key size must be at least {RSA_MIN_KEY_SIZE} bits, but found {public_key_info.key_size} bits.'
                 )
                 raise ValueError(err_msg)
             if public_key_info.key_size is None:
-                err_msg = "Failed to determine key size."
+                err_msg = 'Failed to determine key size.'
                 raise ValueError(err_msg)
-            return rsa.generate_private_key(
-                public_exponent=65537, key_size=public_key_info.key_size
-            )
+            return rsa.generate_private_key(public_exponent=65537, key_size=public_key_info.key_size)
         if public_key_info.public_key_algorithm_oid == PublicKeyAlgorithmOid.ECC:
             if public_key_info.named_curve is None:
-                err_msg = (
-                    "Named curve missing. Only named curves are supported for ECC keys."
-                )
+                err_msg = 'Named curve missing. Only named curves are supported for ECC keys.'
                 raise ValueError(err_msg)
-            if (
-                public_key_info.named_curve is None
-                or public_key_info.named_curve.curve is None
-            ):
-                raise ValueError("Curve not found.")
+            if public_key_info.named_curve is None or public_key_info.named_curve.curve is None:
+                raise ValueError('Curve not found.')
             return ec.generate_private_key(curve=public_key_info.named_curve.curve())
-        err_msg = "Unsupported key type found."
+        err_msg = 'Unsupported key type found.'
         raise TypeError(err_msg)
 
     @classmethod
-    def generate_key_pair_for_signature_suite(
-        cls, signature_suite: SignatureSuite
-    ) -> PrivateKey:
+    def generate_key_pair_for_signature_suite(cls, signature_suite: SignatureSuite) -> PrivateKey:
         """Generates a new key-pair of the type given by the SignatureSuite object.
 
         Args:
@@ -1363,6 +1332,4 @@ class KeyPairGenerator:
             ValueError: If the RSA key size is too small or no named curve is given when generating an EC key.
             TypeError: If the key type of the provided PublicKeyInfo is not supported.
         """
-        return cls.generate_key_pair_for_public_key_info(
-            signature_suite.public_key_info
-        )
+        return cls.generate_key_pair_for_public_key_info(signature_suite.public_key_info)

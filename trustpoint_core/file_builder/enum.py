@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
 
-__all__ = ["ArchiveFormat", "CertificateFileFormat"]
+__all__ = ['ArchiveFormat', 'CertificateFileFormat']
 
 
 class ArchiveFormat(enum.Enum):
@@ -19,12 +19,10 @@ class ArchiveFormat(enum.Enum):
     mime_type: str
     file_extension: str
 
-    ZIP: str = ("zip", "application/zip", ".zip")  # type: ignore[assignment]
-    TAR_GZ: str = ("tar_gz", "application/gzip", ".tar.gz")  # type: ignore[assignment]
+    ZIP: str = ('zip', 'application/zip', '.zip')  # type: ignore[assignment]
+    TAR_GZ: str = ('tar_gz', 'application/gzip', '.tar.gz')  # type: ignore[assignment]
 
-    def __new__(
-        cls, value: None | str, mime_type: str = "", file_extension: str = ""
-    ) -> Self:
+    def __new__(cls, value: None | str, mime_type: str = '', file_extension: str = '') -> Self:
         """Extends the enum with a mime_type and file_extension.
 
         Args:
@@ -36,7 +34,7 @@ class ArchiveFormat(enum.Enum):
             ArchiveFormat: The constructed enum.
         """
         if value is None:
-            err_msg = "None is not a valid archive format."
+            err_msg = 'None is not a valid archive format.'
 
             raise ValueError(err_msg)
         obj = object.__new__(cls)
@@ -52,14 +50,12 @@ class CertificateFileFormat(enum.Enum):
     mime_type: str
     file_extension: str
 
-    PEM: str = ("pem", "application/x-pem-file", ".pem")  # type: ignore[assignment]
-    DER: str = ("der", "application/pkix-cert", ".cer")  # type: ignore[assignment]
-    PKCS7_PEM: str = ("pkcs7_pem", "application/x-pkcs7-certificates", ".p7b")  # type: ignore[assignment]
-    PKCS7_DER: str = ("pkcs7_der", "application/x-pkcs7-certificates", ".p7b")  # type: ignore[assignment]
+    PEM: str = ('pem', 'application/x-pem-file', '.pem')  # type: ignore[assignment]
+    DER: str = ('der', 'application/pkix-cert', '.cer')  # type: ignore[assignment]
+    PKCS7_PEM: str = ('pkcs7_pem', 'application/x-pkcs7-certificates', '.p7b')  # type: ignore[assignment]
+    PKCS7_DER: str = ('pkcs7_der', 'application/x-pkcs7-certificates', '.p7b')  # type: ignore[assignment]
 
-    def __new__(
-        cls, value: None | str, mime_type: str = "", file_extension: str = ""
-    ) -> Self:
+    def __new__(cls, value: None | str, mime_type: str = '', file_extension: str = '') -> Self:
         """Extends the enum with a mime_type and file_extension.
 
         Args:
@@ -71,7 +67,7 @@ class CertificateFileFormat(enum.Enum):
             CertificateFileFormat: The constructed enum.
         """
         if value is None:
-            err_msg = "None is not a valid certificate file format."
+            err_msg = 'None is not a valid certificate file format.'
             raise ValueError(err_msg)
 
         obj = object.__new__(cls)
