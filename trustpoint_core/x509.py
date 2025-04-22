@@ -42,23 +42,17 @@ class CertificateChainExtractor:
             certificate_collection_serializer: The set of certificates to extract the certificate chain from.
         """
         self._certificate = certificate_serializer.as_crypto()
-        self._initial_certificate_collection = (
-            certificate_collection_serializer.as_crypto()
-        )
+        self._initial_certificate_collection = certificate_collection_serializer.as_crypto()
 
         if self._initial_certificate_collection:
-            self._certificate_collection = list(
-                dict.fromkeys(self._initial_certificate_collection)
-            )
+            self._certificate_collection = list(dict.fromkeys(self._initial_certificate_collection))
         else:
             self._certificate_collection = []
 
         self._extract_certificate_chain()
 
     @staticmethod
-    def _verify_directly_issued_by(
-        certificate: x509.Certificate, potential_issuer: x509.Certificate
-    ) -> bool:
+    def _verify_directly_issued_by(certificate: x509.Certificate, potential_issuer: x509.Certificate) -> bool:
         try:
             certificate.verify_directly_issued_by(potential_issuer)
         except (ValueError, TypeError, InvalidSignature):
@@ -78,9 +72,7 @@ class CertificateChainExtractor:
             issuers = [
                 certificate
                 for certificate in self._certificate_collection
-                if self._verify_directly_issued_by(
-                    certificate=current_certificate, potential_issuer=certificate
-                )
+                if self._verify_directly_issued_by(certificate=current_certificate, potential_issuer=certificate)
             ]
 
             if len(issuers) == 0:
@@ -91,7 +83,7 @@ class CertificateChainExtractor:
                 certificate_chain.append(issuers[0])
                 current_certificate = issuers[0]
                 continue
-            err_msg = "Found multiple valid certificate chains."
+            err_msg = 'Found multiple valid certificate chains.'
             raise ValueError(err_msg)
 
         self._certificate_chain = certificate_chain
@@ -163,6 +155,4 @@ class CertificateChainExtractor:
         self,
     ) -> CertificateCollectionSerializer:
         """Gets the extracted certificate chain including the certificate corresponding to the chain."""
-        return CertificateCollectionSerializer(
-            self.certificate_chain_including_certificate
-        )
+        return CertificateCollectionSerializer(self.certificate_chain_including_certificate)
