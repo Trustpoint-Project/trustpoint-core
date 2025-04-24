@@ -2,15 +2,14 @@
 
 from __future__ import annotations
 
+import typing
 
+from cryptography import exceptions as crypto_exceptions
 from cryptography import x509
 from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.serialization import pkcs7
-from cryptography import exceptions as crypto_exceptions
-from cryptography.hazmat.primitives.serialization import Encoding, PrivateFormat, pkcs12
+from cryptography.hazmat.primitives.serialization import Encoding, PrivateFormat, pkcs7, pkcs12
 
-from trustpoint_core.types import PrivateKey, PublicKey
-import typing
+from trustpoint_core.key_types import PrivateKey, PublicKey
 
 
 def load_pkcs12_bytes(p12: bytes, password: bytes | None = None) -> pkcs12.PKCS12KeyAndCertificates:
@@ -21,22 +20,19 @@ def load_pkcs12_bytes(p12: bytes, password: bytes | None = None) -> pkcs12.PKCS1
         password: The password to decrypt the PKCS#12 data structure, if any.
 
     Returns:
-        object: 
         The loaded PKCS12KeyAndCertificates object.
 
     Raises:
-        TypeError: If p12 is not a bytes object or the password is not a bytes object or None.
+        TypeError: If the p12 is not a bytes object or the password is not None or a bytes object.
+        ValueError: If parsing and loading of the PKCS#12 file failed.
     """
-    if not isinstance(p12, bytes):
-        err_msg = f'Expected a bytes object, but got {type(p12)})'
-        raise TypeError(err_msg)
-
-    if not isinstance(password, bytes) and password is not None:
-        err_msg = f'Expected the password to be a bytes object or None, but got {type(password)})'
-        raise TypeError(err_msg)
-
     try:
         loaded_p12 = pkcs12.load_pkcs12(p12, password)
+    except TypeError as exception:
+        err_msg = (
+            f'Expected p12 to be bytes and the password to be bytes or None, but got {type(p12)} and {type(password)}.'
+        )
+        raise TypeError(err_msg) from exception
     except Exception as exception:
         err_msg = 'Failed to load PKCS#12 bytes. Either wrong password or malformed data.'
         raise ValueError(err_msg) from exception
@@ -53,15 +49,19 @@ def get_encryption_algorithm(
         password: A password to use, if any.
 
     Returns:
-        If a password is give, BestAvailableEncryption(password) is returned, otherwise NoEncryption()
-    """
+        If a password is provided, BestAvailableEncryption(password) is returned, otherwise NoEncryption()
 
-    if not isinstance(password, bytes) and password is not None:
-        err_msg = f'Expected the password to be a bytes object or None, but got {type(password)})'
-        raise TypeError(err_msg)
-    if password:
+    Raises:
+        ValueError if getting the BestAvailableEncryption algorithm failed.
+    """
+    if password is None:
+        return serialization.NoEncryption()
+
+    try:
         return serialization.BestAvailableEncryption(password)
-    return serialization.NoEncryption()
+    except Exception as exception:
+        err_msg = 'Failed to get the BestAvailableEncryption algorithm.'
+        raise ValueError(err_msg) from exception
 
 
 class PublicKeySerializer:
@@ -78,7 +78,7 @@ class PublicKeySerializer:
             public_key: The public key object to be serialized.
 
         Raises:
-            TypeError: If the public key is not a PublicKey object.
+            TypeError: If the public key is not a supported public key object.
         """
         if not isinstance(public_key, typing.get_args(PublicKey)):
             err_msg = f'Expected a public key object, but got {type(public_key)}.'
@@ -97,8 +97,8 @@ class PublicKeySerializer:
             The corresponding PublicKeySerializer containing the provided key.
 
         Raises:
-            TypeError: If the public key is not a bytes object.
-            ValueError: If loading the public key failed or the contained key type is not supported.
+            TypeError: If the public key is not a bytes object or the key type is not supported.
+            ValueError: If loading the public key failed.
         """
         try:
             loaded_public_key = serialization.load_der_public_key(public_key)
@@ -114,7 +114,7 @@ class PublicKeySerializer:
 
         if not isinstance(loaded_public_key, typing.get_args(PublicKey)):
             err_msg = f'The key type {type(loaded_public_key)} is not supported.'
-            raise ValueError(err_msg)
+            raise TypeError(err_msg)
 
         return cls(loaded_public_key)
 
@@ -129,7 +129,7 @@ class PublicKeySerializer:
             The corresponding PublicKeySerializer containing the provided key.
 
         Raises:
-            TypeError: If the public key is not a bytes object.
+            TypeError: If the public key is not a bytes object or the key type is not supported.
             ValueError: If loading the public key failed.
         """
         try:
@@ -146,7 +146,7 @@ class PublicKeySerializer:
 
         if not isinstance(loaded_public_key, typing.get_args(PublicKey)):
             err_msg = f'The key type {type(loaded_public_key)} is not supported.'
-            raise ValueError(err_msg)
+            raise TypeError(err_msg)
 
         return cls(loaded_public_key)
 
@@ -161,7 +161,7 @@ class PublicKeySerializer:
             The corresponding PublicKeySerializer containing the public key contained in the provided private key.
 
         Raises:
-            TypeError: If the private key is not a private key object.
+            TypeError: If the private key is not a private key object or the key type is not supported.
         """
         if not isinstance(private_key, typing.get_args(PrivateKey)):
             err_msg = f'Expected a private key object, but got {type(private_key)}.'
@@ -180,17 +180,24 @@ class PublicKeySerializer:
             The corresponding PublicKeySerializer containing the provided key contained in the certificate.
 
         Raises:
-            TypeError: If the private key is not a private key object.
-            ValueError: If the key type is not supported.
+            AttributeError: If the certificate does not provide a public_key() method to extract the public key.
+            ValueError: If no public key was found in the provided certificate object.
+            TypeError: If the key type is not supported.
         """
-        if not isinstance(certificate, x509.Certificate):
-            err_msg = f'Expected a certificate object, but got {type(certificate)}.'
-            raise TypeError(err_msg)
 
-        public_key = certificate.public_key()
+        try:
+            public_key = certificate.public_key()
+        except Exception as exception:
+            err_msg = f'Object of type {type(certificate)} does not have a public_key() method.'
+            raise TypeError(err_msg) from exception
+
+        if public_key is None:
+            err_msg = f'No public key found within the certificate.'
+            raise ValueError(err_msg)
+
         if not isinstance(public_key, typing.get_args(PublicKey)):
             err_msg = f'The key type {type(public_key)} is not supported.'
-            raise ValueError(err_msg)
+            raise TypeError(err_msg)
 
         return cls(public_key)
 
@@ -241,7 +248,7 @@ class PrivateKeySerializer:
             private_key: The private key object to be serialized.
 
         Raises:
-            TypeError: If the private key is not a PrivateKey object.
+            TypeError: If the private key is not a PrivateKey object or the key type is not supported.
         """
         if not isinstance(private_key, typing.get_args(PrivateKey)):
             err_msg = f'Expected a private key object, but got {type(private_key)}.'
@@ -250,7 +257,7 @@ class PrivateKeySerializer:
         self._private_key = private_key
 
     @classmethod
-    def from_pem(cls, private_key: bytes, password: bytes | None = None):
+    def from_pem(cls, private_key: bytes, password: bytes | None = None) -> PrivateKeySerializer:
         """Creates a PrivateKeySerializer from a PEM encoded public key.
 
         Args:
@@ -261,7 +268,7 @@ class PrivateKeySerializer:
             The corresponding PrivateKeySerializer containing the provided key.
 
         Raises:
-            TypeError: If the private key is not a bytes object.
+            TypeError: If the private key type is not supported.
             ValueError: If loading the private key failed.
         """
         if not isinstance(private_key, bytes):
@@ -282,12 +289,12 @@ class PrivateKeySerializer:
 
         if not isinstance(loaded_private_key, typing.get_args(PrivateKey)):
             err_msg = f'The key type {type(loaded_private_key)} is not supported.'
-            raise ValueError(err_msg)
+            raise TypeError(err_msg)
 
         return cls(loaded_private_key)
 
     @classmethod
-    def from_der(cls, private_key: bytes, password: bytes | None = None):
+    def from_der(cls, private_key: bytes, password: bytes | None = None) -> PrivateKeySerializer:
         """Creates a PrivateKeySerializer from a DER encoded public key.
 
         Args:
@@ -298,7 +305,7 @@ class PrivateKeySerializer:
             The corresponding PrivateKeySerializer containing the provided key.
 
         Raises:
-            TypeError: If the private key is not a bytes object.
+            TypeError: If the private key type is not supported.
             ValueError: If loading the private key failed.
         """
         if not isinstance(private_key, bytes):
@@ -319,7 +326,7 @@ class PrivateKeySerializer:
 
         if not isinstance(loaded_private_key, typing.get_args(PrivateKey)):
             err_msg = f'The key type {type(loaded_private_key)} is not supported.'
-            raise ValueError(err_msg)
+            raise TypeError(err_msg)
 
         return cls(loaded_private_key)
 
@@ -335,8 +342,12 @@ class PrivateKeySerializer:
             The corresponding PrivateKeySerializer containing the provided key.
 
         Raises:
-            TypeError: If the private key is not a bytes object.
-            ValueError: If loading the private key failed.
+            TypeError:
+                If the p12 is not a bytes object,
+                the password is not None or a bytes object or,
+                the private key is not supported.
+            ValueError:
+                If parsing and loading of the PKCS#12 file failed or, no private key is available.
         """
         loaded_p12 = load_pkcs12_bytes(p12, password)
         return cls.from_pkcs12(loaded_p12)
@@ -352,18 +363,18 @@ class PrivateKeySerializer:
             The corresponding PrivateKeySerializer containing the provided key.
 
         Raises:
-            TypeError: If the private key is not a PKCS#12 object.
-            ValueError: If loading the private key failed.
+            TypeError: If the private key type is not supported.
+            ValueError: If no private key is available.
         """
-        if not p12.key:
+        private_key = p12.key
+
+        if private_key is None:
             err_msg = 'The provided PKCS#12 object does not contain a private key.'
             raise ValueError(err_msg)
 
-        private_key = p12.key
-
         if not isinstance(private_key, typing.get_args(PrivateKey)):
             err_msg = f'The key type {type(private_key)} is not supported.'
-            raise ValueError(err_msg)
+            raise TypeError(err_msg)
 
         return cls(private_key)
 
@@ -376,7 +387,7 @@ class PrivateKeySerializer:
                 Empty bytes will be interpreted as None.
 
         Returns:
-            Bytes that contain the private key in PKCS#1 DER format.
+            Bytes object that contains the private key in PKCS#1 DER format.
         """
         return self._private_key.private_bytes(
             encoding=Encoding.DER,
@@ -393,7 +404,7 @@ class PrivateKeySerializer:
                 Empty bytes will be interpreted as None.
 
         Returns:
-            Bytes that contain the private key in PKCS#1 PEM format.
+            Bytes object that contains the private key in PKCS#1 PEM format.
         """
         return self._private_key.private_bytes(
             encoding=Encoding.PEM,
@@ -410,7 +421,7 @@ class PrivateKeySerializer:
                 Empty bytes will be interpreted as None.
 
         Returns:
-            Bytes that contain the private key in PKCS#8 DER format.
+            Bytes object that contains the private key in PKCS#8 DER format.
         """
         return self._private_key.private_bytes(
             encoding=Encoding.DER,
@@ -427,7 +438,7 @@ class PrivateKeySerializer:
                 Empty bytes will be interpreted as None.
 
         Returns:
-            Bytes that contain the private key in PKCS#8 DER format.
+            Bytes object that contains the private key in PKCS#8 DER format.
         """
         return self._private_key.private_bytes(
             encoding=Encoding.PEM,
@@ -445,7 +456,7 @@ class PrivateKeySerializer:
             friendly_name: The friendly_name to set in the PKCS#12 structure.
 
         Returns:
-            Bytes that contain the private key in a PKCS#12 structure.
+            Bytes object that contains the private key in a PKCS#12 structure.
         """
         return pkcs12.serialize_key_and_certificates(
             name=friendly_name,
@@ -456,10 +467,10 @@ class PrivateKeySerializer:
         )
 
     def as_crypto(self) -> PrivateKey:
-        """Gets the associated private key as PrivateKey instance.
+        """Gets the associated private key as PrivateKey object.
 
         Returns:
-            The associated private key as PrivateKey instance.
+            The associated private key as PrivateKey object.
         """
         return self._private_key
 
@@ -491,12 +502,15 @@ class CertificateSerializer:
             certificate: The certificate object to be serialized.
 
         Raises:
-            TypeError: If certificate is not a Certificate object.
+            TypeError:
+                If certificate is not a Certificate object.
+                If the certificate contains an unsupported public key.
         """
         if not isinstance(certificate, x509.Certificate):
             err_msg = f'Expected a certificate object, but got {type(certificate)}.'
             raise TypeError(err_msg)
         self._certificate = certificate
+        self._public_key_serializer = PublicKeySerializer(certificate.public_key())
 
     @classmethod
     def from_pem(cls, certificate: bytes) -> CertificateSerializer:
@@ -552,7 +566,7 @@ class CertificateSerializer:
         """Gets the associated certificate as bytes in PEM format.
 
         Returns:
-            Bytes that contain the certificate in PEM format.
+            Bytes object that contains the certificate in PEM format.
         """
         if self._pem is None:
             self._pem = self._certificate.public_bytes(encoding=serialization.Encoding.PEM)
@@ -562,7 +576,7 @@ class CertificateSerializer:
         """Gets the associated certificate as bytes in DER format.
 
         Returns:
-            Bytes that contain the certificate in DER format.
+            Bytes object that contains the certificate in DER format.
         """
         if self._der is None:
             self._der = self._certificate.public_bytes(encoding=serialization.Encoding.DER)
@@ -572,7 +586,7 @@ class CertificateSerializer:
         """Gets the associated certificate as bytes in PKCS#7 PEM format.
 
         Returns:
-            Bytes that contain the certificate in PKCS#7 PEM format.
+            Bytes object that contains the certificate in PKCS#7 PEM format.
         """
         if self._pkcs7_pem is None:
             self._pkcs7_pem = pkcs7.serialize_certificates([self._certificate], serialization.Encoding.PEM)
@@ -582,7 +596,7 @@ class CertificateSerializer:
         """Gets the associated certificate as bytes in PKCS#7 DER format.
 
         Returns:
-            Bytes that contain the certificate in PKCS#7 DER format.
+            Bytes object that contains the certificate in PKCS#7 DER format.
         """
         if self._pkcs7_der is None:
             self._pkcs7_der = pkcs7.serialize_certificates([self._certificate], serialization.Encoding.DER)
@@ -603,8 +617,6 @@ class CertificateSerializer:
         Returns:
             The public key object.
         """
-        if self._public_key_serializer is None:
-            self._public_key_serializer = self.public_key_serializer  # added this so if key is none it is assigned
         return self._public_key_serializer.as_crypto()
 
     @property
@@ -614,28 +626,7 @@ class CertificateSerializer:
         Returns:
             The corresponding PublicKeySerializer object.
         """
-        if self._public_key_serializer is None:
-            public_key = self._certificate.public_key()
-            if not isinstance(public_key, typing.get_args(PublicKey)):
-                err_msg = f'Expected a public key object, but got {type(public_key)}.'
-                raise TypeError(err_msg)
-
-            self._public_key_serializer = PublicKeySerializer(public_key)
         return self._public_key_serializer
-
-    @staticmethod
-    def _load_pem_certificate(certificate_data: bytes) -> x509.Certificate:
-        try:
-            return x509.load_pem_x509_certificate(certificate_data)
-        except Exception as exception:
-            raise ValueError from exception
-
-    @staticmethod
-    def _load_der_certificate(certificate_data: bytes) -> x509.Certificate:
-        try:
-            return x509.load_der_x509_certificate(certificate_data)
-        except Exception as exception:
-            raise ValueError from exception
 
 
 class CertificateCollectionSerializer:
@@ -643,20 +634,23 @@ class CertificateCollectionSerializer:
 
     Certificate collections are lists of single certificates. The order will be preserved. Usually these collections
     will either be a certificate chain or a trust store.
-
-    Warnings:
-        The CertificateCollectionSerializer class does not evaluate or validate any contents of the certificate
-        collection, i.e. no certificate chains are validated.
     """
 
     _certificates: list[x509.Certificate]
 
-    def __init__(self, certificates: list[x509.Certificate]) -> None:
+    def __init__(self, certificates: list[x509.Certificate] | None = None) -> None:
         """Initializes a CertificateCollectionSerializer with the provided list of certificate objects.
 
         Args:
-            certificates: A list of certificate objects or an emtpy list.
+            certificates: A list of x509.Certificate objects or an emtpy list.
+
+        Raises:
+            TypeError: If certificates is not a list of x509.Certificate objects or an empty list.
         """
+        if certificates is None:
+            self._certificates = []
+            return
+
         if not isinstance(certificates, list):
             err_msg = 'CertificateCollectionSerializer requires a list of certificate objects.'
             raise TypeError(err_msg)
@@ -675,15 +669,19 @@ class CertificateCollectionSerializer:
         """Creates a CertificateCollectionSerializer from a list of certificates as byte objects in DER format.
 
         Args:
-            certificates: A list of certificates as byte objects in DER format.
+            certificates: A list of certificates as byte objects in DER format or an empty list.
 
         Returns:
             The corresponding CertificateCollectionSerializer.
 
         Raises:
-            TypeError: If certificates is not a list of bytes.
-            ValueError: If loading os the certificates failed.
+            TypeError: If certificates is not a list of bytes or an empty list.
+            ValueError: If loading of one or more contained certificates failed.
         """
+        if not isinstance(certificates, list):
+            err_msg = f'Expected certificates to be a list, but found {type(certificates)}.'
+            raise TypeError(err_msg)
+
         loaded_certificates = []
         for certificate in certificates:
             try:
@@ -710,9 +708,13 @@ class CertificateCollectionSerializer:
             The corresponding CertificateCollectionSerializer.
 
         Raises:
-            TypeError: If certificates is not a list of bytes.
-            ValueError: If loading of the certificates failed.
+            TypeError: If certificates is not a list of bytes or an empty list.
+            ValueError: If loading of one or more contained certificates failed.
         """
+        if not isinstance(certificates, list):
+            err_msg = f'Expected certificates to be a list, but found {type(certificates)}.'
+            raise TypeError(err_msg)
+
         loaded_certificates = []
         for certificate in certificates:
             try:
@@ -739,8 +741,8 @@ class CertificateCollectionSerializer:
             The corresponding CertificateCollectionSerializer.
 
         Raises:
-            TypeError: If certificates is not a list of bytes.
-            ValueError: If loading of the certificates failed.
+            TypeError: If certificates is not a bytes object.
+            ValueError: If loading of one or more contained certificates failed.
         """
         try:
             loaded_certificates = x509.load_pem_x509_certificates(certificates)
@@ -771,8 +773,8 @@ class CertificateCollectionSerializer:
             The corresponding CertificateCollectionSerializer.
 
         Raises:
-            TypeError: If certificates is not bytes object.
-            ValueError: If loading of the certificates failed.
+            TypeError: If certificates is not a bytes object.
+            ValueError: If loading of one or more contained certificates failed.
         """
         try:
             loaded_certificates = pkcs7.load_der_pkcs7_certificates(certificates)
@@ -803,8 +805,8 @@ class CertificateCollectionSerializer:
             The corresponding CertificateCollectionSerializer.
 
         Raises:
-            TypeError: If certificates is not bytes object.
-            ValueError: If loading of the certificates failed.
+            TypeError: If certificates is not a bytes object.
+            ValueError: If loading of one or more contained certificates failed.
         """
         try:
             loaded_certificates = pkcs7.load_pem_pkcs7_certificates(certificates)
@@ -834,8 +836,10 @@ class CertificateCollectionSerializer:
             The corresponding CertificateCollectionSerializer.
 
         Raises:
-            TypeError: If p12 is not a PKCS12KeyAndCertificates object.
-            ValueError: If loading of the PKCS12KeyAndCertificates failed.
+            TypeError:
+                If the p12 is not a bytes object, or the password is not None or a bytes object.
+            ValueError:
+                If parsing and loading of the PKCS#12 file failed.
         """
         loaded_p12 = load_pkcs12_bytes(p12, password)
         return cls.from_pkcs12(loaded_p12)
@@ -861,9 +865,8 @@ class CertificateCollectionSerializer:
         p12_certificate = p12.cert.certificate if p12.cert else None
         p12_additional_certificates = p12.additional_certs if p12.additional_certs else []
 
-        certificates = [cert.certificate for cert in p12_additional_certificates]
-        if p12_certificate:
-            certificates.append(p12_certificate)
+        certificates = [p12_certificate] if p12_certificate else []
+        certificates.extend([cert.certificate for cert in p12_additional_certificates])
 
         return cls(certificates)
 
@@ -921,21 +924,23 @@ class CertificateCollectionSerializer:
 
         Returns:
             A new CertificateCollectionSerializer instance containing the sum of the certificates.
+
+        Raises:
+            TypeError: If other is a type that cannot be added to the CertificateCollectionSerializer.
         """
         if isinstance(other, x509.Certificate):
             return CertificateCollectionSerializer([other, *self._certificates])
-        elif isinstance(other, CertificateSerializer):
+        if isinstance(other, CertificateSerializer):
             if other.as_crypto() in self._certificates:
                 return CertificateCollectionSerializer(self._certificates)
             return CertificateCollectionSerializer([other.as_crypto(), *self._certificates])
-        elif isinstance(other, CertificateCollectionSerializer):
+        if isinstance(other, CertificateCollectionSerializer):
             return CertificateCollectionSerializer(list(set(self._certificates + other._certificates)))
-        else:
-            err_msg = (
-                'Only CertificateSerializer and CertificateCollectionSerializers can be added to a'
-                'CertificateCollectionSerializer.'
-            )
-            raise TypeError(err_msg)
+        err_msg = (
+            'Only CertificateSerializer and CertificateCollectionSerializers can be added to a'
+            'CertificateCollectionSerializer.'
+        )
+        raise TypeError(err_msg)
 
     def __len__(self) -> int:
         """Gets the number of contained certificates.
@@ -946,10 +951,10 @@ class CertificateCollectionSerializer:
         return len(self._certificates)
 
     def as_crypto(self) -> list[x509.Certificate]:
-        """Gets the associated certificate collection as list of x509.Certificate instances.
+        """Gets the associated certificate collection as a list of x509.Certificate objects.
 
         Returns:
-            List of x509.Certificate instances.
+            List of x509.Certificate objects.
         """
         return self._certificates
 
@@ -962,26 +967,26 @@ class CertificateCollectionSerializer:
         return b''.join(self.as_pem_list())
 
     def as_pem_list(self) -> list[bytes]:
-        """Gets the certificates as list of PEM encoded bytes.
+        """Gets the certificates as a list of PEM encoded bytes.
 
         Returns:
-            Certificates as list of PEM encoded bytes.
+            Certificates as a list of PEM encoded bytes.
         """
         return [CertificateSerializer(certificate).as_pem() for certificate in self._certificates]
 
     def as_der_list(self) -> list[bytes]:
-        """Gets the certificates as list of DER encoded bytes.
+        """Gets the certificates as a list of DER encoded bytes.
 
         Returns:
-            Certificates as list of DER encoded bytes.
+            Certificates as a list of DER encoded bytes.
         """
         return [CertificateSerializer(certificate).as_der() for certificate in self._certificates]
 
     def as_certificate_serializer_list(self) -> list[CertificateSerializer]:
-        """Gets the certificates as list of CertificateSerializer instances.
+        """Gets the certificates as a list of CertificateSerializer objects.
 
         Returns:
-            Certificates as list of CertificateSerializer instances.
+            Certificates as a list of CertificateSerializer objects.
         """
         return [CertificateSerializer(certificate) for certificate in self._certificates]
 
@@ -989,16 +994,22 @@ class CertificateCollectionSerializer:
         """Gets the associated certificate collection as bytes in PKCS#7 PEM format.
 
         Returns:
-            Bytes that contain certificate collection in PKCS#7 PEM format.
+            Bytes that contain the certificate collection in PKCS#7 PEM format.
         """
+        if not self._certificates:
+            return b''
+
         return pkcs7.serialize_certificates(self.as_crypto(), serialization.Encoding.PEM)
 
     def as_pkcs7_der(self) -> bytes:
         """Gets the associated certificate collection as bytes in PKCS#7 DER format.
 
         Returns:
-            bytes: Bytes that contain certificate collection in PKCS#7 DER format.
+            Bytes that contain the certificate collection in PKCS#7 DER format.
         """
+        if not self._certificates:
+            return b''
+
         return pkcs7.serialize_certificates(self.as_crypto(), serialization.Encoding.DER)
 
 
@@ -1180,7 +1191,6 @@ class CertificateCollectionSerializer:
 #
 #         current_certificate = self.certificate
 #
-#         # TODO: Could be attacked for circular signature paths. Fix this!
 #         while current_certificate:
 #             issuer_certificate = self._get_issuer(current_certificate)
 #             if issuer_certificate is None or current_certificate == issuer_certificate:

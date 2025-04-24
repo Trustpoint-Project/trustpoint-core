@@ -9,9 +9,11 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec, rsa
 
 if TYPE_CHECKING:
-    from typing import Self, Optional
-    from trustpoint_core.types import PublicKey, PrivateKey
+    from typing import Self
+
     from cryptography import x509
+
+    from trustpoint_core.key_types import PrivateKey, PublicKey
 
 
 RSA_MIN_KEY_SIZE = 2048
@@ -486,7 +488,7 @@ class NamedCurve(enum.Enum):
     dotted_string: str
     verbose_name: str
     key_size: int
-    curve: Optional[type[ec.EllipticCurve]]
+    curve: type[ec.EllipticCurve] | None
     ossl_curve_name: str
 
     NONE = ('None', 'None', 0, None, '')
@@ -533,7 +535,7 @@ class NamedCurve(enum.Enum):
         dotted_string: str,
         verbose_name: str,
         key_size: int,
-        curve: Optional[type[ec.EllipticCurve]],
+        curve: type[ec.EllipticCurve] | None,
         ossl_curve_name: str,
     ) -> Self:
         """Sets the values for this multi value enum.
@@ -543,6 +545,7 @@ class NamedCurve(enum.Enum):
             verbose_name: The verbose name for displaying it to a user.
             key_size: The key size of the corresponding named curve.
             curve: The corresponding python cryptography curve class.
+            ossl_curve_name: The
         """
         obj = object.__new__(cls)
         obj._value_ = dotted_string
@@ -572,7 +575,7 @@ class PublicKeyAlgorithmOid(enum.Enum):
     ECC = ('1.2.840.10045.2.1', 'ECC')
     RSA = ('1.2.840.113549.1.1.1', 'RSA')
 
-    # TODO(AlexHx8472): Support ED25519, ED448
+    # TODO(AlexHx8472): Support ED25519, ED448  # noqa: FIX002
 
     def __new__(cls, dotted_string: str, verbose_name: str) -> Self:
         """Sets the values for this multi value enum.
@@ -763,7 +766,7 @@ class AlgorithmIdentifier(enum.Enum):
         HashAlgorithm.SHA3_512,
     )
 
-    # TODO(AlexHx8472): Add RSA PSS support.
+    # TODO(AlexHx8472): Add RSA PSS support.    # noqa: FIX002
 
     ECDSA_SHA1 = (
         '1.2.840.10045.4.1',
@@ -1117,7 +1120,8 @@ class SignatureSuite:
             return f'RSA-{self.public_key_info.key_size}-{hash_alg_name}'
         if self.public_key_info.public_key_algorithm_oid == PublicKeyAlgorithmOid.ECC:
             if self.public_key_info.named_curve is None:
-                raise ValueError('Named curve not found.')
+                err_msg = 'Named curve not found.'
+                raise ValueError(err_msg)
             return f'ECC-{self.public_key_info.named_curve.verbose_name}-{hash_alg_name}'
         return 'Invalid Signature Suite'
 
@@ -1313,7 +1317,8 @@ class KeyPairGenerator:
                 err_msg = 'Named curve missing. Only named curves are supported for ECC keys.'
                 raise ValueError(err_msg)
             if public_key_info.named_curve is None or public_key_info.named_curve.curve is None:
-                raise ValueError('Curve not found.')
+                err_msg = 'Curve not found.'
+                raise ValueError(err_msg)
             return ec.generate_private_key(curve=public_key_info.named_curve.curve())
         err_msg = 'Unsupported key type found.'
         raise TypeError(err_msg)

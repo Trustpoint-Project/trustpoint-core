@@ -58,7 +58,6 @@ class CertificateCollectionBuilder:
         Returns:
             The bytes to be stored on disk.
         """
-
         if file_format == CertificateFileFormat.PEM:
             return certificate_collection_serializer.as_pem()
         if file_format == CertificateFileFormat.PKCS7_PEM:
@@ -148,7 +147,6 @@ class CertificateCollectionArchiveFileBuilder:
         Returns:
             bytes: The archive in byte representation.
         """
-
         if file_format == CertificateFileFormat.PEM:
             return Archiver.archive(
                 data_to_archive={

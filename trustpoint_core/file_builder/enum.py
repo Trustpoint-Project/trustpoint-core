@@ -7,7 +7,7 @@ import enum
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing import Self
 
 
 __all__ = ['ArchiveFormat', 'CertificateFileFormat']
