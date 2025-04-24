@@ -184,7 +184,6 @@ class PublicKeySerializer:
             ValueError: If no public key was found in the provided certificate object.
             TypeError: If the key type is not supported.
         """
-
         try:
             public_key = certificate.public_key()
         except Exception as exception:
@@ -192,7 +191,7 @@ class PublicKeySerializer:
             raise TypeError(err_msg) from exception
 
         if public_key is None:
-            err_msg = f'No public key found within the certificate.'
+            err_msg = 'No public key found within the certificate.'
             raise ValueError(err_msg)
 
         if not isinstance(public_key, typing.get_args(PublicKey)):
@@ -488,7 +487,7 @@ class CertificateSerializer:
     """The CertificateSerializer class provides methods for serializing and loading a certificate."""
 
     _certificate: x509.Certificate
-    _public_key_serializer: PublicKeySerializer | None = None
+    _public_key_serializer: PublicKeySerializer
 
     _pem: bytes | None = None
     _der: bytes | None = None
@@ -510,7 +509,13 @@ class CertificateSerializer:
             err_msg = f'Expected a certificate object, but got {type(certificate)}.'
             raise TypeError(err_msg)
         self._certificate = certificate
-        self._public_key_serializer = PublicKeySerializer(certificate.public_key())
+
+        public_key = certificate.public_key()
+        if not isinstance(public_key, typing.get_args(PublicKey)):
+            err_msg = f'The public key type {type(public_key)} is not supported.'
+            raise TypeError(err_msg)
+
+        self._public_key_serializer = PublicKeySerializer(public_key)
 
     @classmethod
     def from_pem(cls, certificate: bytes) -> CertificateSerializer:
@@ -1013,205 +1018,244 @@ class CertificateCollectionSerializer:
         return pkcs7.serialize_certificates(self.as_crypto(), serialization.Encoding.DER)
 
 
-# class CredentialSerializer:
-#     """The CredentialSerializer class provides methods for serializing and loading X.509 Credentials.
-#
-#     A complete credential consists of a private key, a matching certificate and the full chain including the root ca.
-#
-#     However, this object can also be used for partial credentials, e.g. missing private key or only parts or no
-#     certificate chain at all.
-#     """
-#
-#     _private_key: PrivateKey | None
-#     _certificate: x509.Certificate | None
-#     _additional_certificates: list[x509.Certificate]
-#
-#     def __init__(
-#             self,
-#             private_key: PrivateKey | None = None,
-#             certificate: x509.Certificate | None = None,
-#             additional_certificates: list[x509.Certificate] | None = None) -> None:
-#         """Initializes a CredentialSerializer with the provided list of certificate objects.
-#
-#         Args:
-#             private_key: The private key associated with this credential, if any.
-#             certificate: The certificate associated with this credential and private key.
-#             additional_certificates:
-#             The certificate chain associated with this credential, which may or may not be complete or missing at all.
-#         """
-#         self.private_key = private_key
-#         self.certificate = certificate
-#         self.additional_certificates = additional_certificates
-#
-#     @property
-#     def private_key(self) -> PrivateKey | None:
-#         return self._private_key
-#
-#     @private_key.setter
-#     def private_key(self, private_key: PrivateKey | None) -> None:
-#         if private_key is not None and not isinstance(private_key, PrivateKey):
-#             err_msg = f'The private_key must be of type PrivateKey or None, but got {type(private_key)}.'
-#             raise TypeError(err_msg)
-#         self._private_key = private_key
-#
-#     @private_key.deleter
-#     def private_key(self) -> None:
-#         self._private_key = None
-#
-#     @property
-#     def certificate(self) -> x509.Certificate | None:
-#         return self._certificate
-#
-#     @certificate.setter
-#     def certificate(self, certificate: x509.Certificate | None) -> None:
-#         if certificate is not None and not isinstance(certificate, x509.Certificate):
-#             err_msg = f'The certificate must be of type Certificate or None, but got {type(certificate)}.'
-#             raise TypeError(err_msg)
-#         self._certificate = certificate
-#
-#     @certificate.deleter
-#     def certificate(self) -> None:
-#         self._certificate = None
-#
-#     @property
-#     def additional_certificates(self) -> list[x509.Certificate]:
-#         return self._additional_certificates
-#
-#     @additional_certificates.setter
-#     def additional_certificates(self, additional_certificates: list) -> None:
-#         if additional_certificates is None:
-#             self._additional_certificates = []
-#         elif isinstance(additional_certificates, list):
-#             for certificate in additional_certificates:
-#                 if not isinstance(certificate, x509.Certificate):
-#                     err_msg = (
-#                         'All elements contained in the list must be of type Certificate, '
-#                         f'but at least one is of type {type(certificate)}.'
-#                     raise TypeError(err_msg)
-#                 self._additional_certificates = additional_certificates
-#         err_msg = (
-#             'The additional_certificates must be None or a list of Certificate objects, '
-#             f'but got {type(additional_certificates)}.'
-#         )
-#         raise TypeError(err_msg)
-#
-#     @additional_certificates.deleter
-#     def additional_certificates(self) -> None:
-#         self._additional_certificates = []
-#
-#     @classmethod
-#     def from_pkcs12_bytes(cls, p12: bytes, password: bytes | None = None) -> CredentialSerializer:
-#         """Creates a CredentialSerializer from a PKCS#12 structure.
-#
-#         Args:
-#             p12: A PKCS#12 structure.
-#             password: The password to decrypt the PKCS#12 file.
-#
-#         Returns:
-#             The corresponding CredentialSerializer.
-#
-#         Raises:
-#             TypeError: If p12 is not a PKCS12KeyAndCertificates object.
-#             ValueError: If loading of the PKCS12KeyAndCertificates failed.
-#         """
-#         loaded_p12 = load_pkcs12_bytes(p12, password)
-#         return cls.from_pkcs12(loaded_p12)
-#
-#     @classmethod
-#     def from_pkcs12(cls, p12: pkcs12.PKCS12KeyAndCertificates) -> CredentialSerializer:
-#         """Creates a CredentialSerializer from a PKCS#12 structure.
-#
-#         Args:
-#             p12: A PKCS#12 structure.
-#
-#         Returns:
-#             The corresponding CredentialSerializer.
-#
-#         Raises:
-#             TypeError: If p12 is not a PKCS12KeyAndCertificates object.
-#             ValueError: If loading of the PKCS12KeyAndCertificates failed.
-#         """
-#         if not isinstance(p12, pkcs12.PKCS12KeyAndCertificates):
-#             err_msg = f'Expected p12 to be a PKCS12KeyAndCertificates object, but got {type(p12)}.'
-#             raise TypeError(err_msg)
-#
-#         certificate = p12.cert.certificate if p12.cert else None
-#         private_key = p12.key
-#         p12_additional_certificates = p12.additional_certs if p12.additional_certs else []
-#         additional_certificates = [cert.certificate for cert in p12_additional_certificates]
-#
-#         return cls(private_key, certificate, additional_certificates)
-#
-#     def as_pkcs12(
-#         self, password: None | bytes = None, friendly_name: bytes = b""
-#     ) -> bytes:
-#         """Gets the credential as bytes in PKCS#12 format.
-#
-#         Args:
-#             password: Password if the credential shall be encrypted, None otherwise.
-#             friendly_name: The friendly_name to set in the PKCS#12 structure.
-#
-#         Returns:
-#             bytes: Bytes that contain the credential in PKCS#12 format.
-#         """
-#         return pkcs12.serialize_key_and_certificates(
-#             name=friendly_name,
-#             key=self.private_key,
-#             cert=self.certificate,
-#             cas=self.additional_certificates,
-#             encryption_algorithm=get_encryption_algorithm(password),
-#         )
-#
-#     def normalize(self) -> None:
-#         """Tries to normalize the credential.
-#
-#         Normalization:
-#             This operation will try to determine the certificate chain, order them appropriately, such that
-#             the certificate that issued the credential certificate will be the first additional certificate and the
-#             root certificate will be the last certificate. All other certificates will be dropped. This operation will
-#             not fail if certificates are missing and the chain cannot be constructed. It will just include all
-#             certificate of the chain that are available.
-#
-#             This operation will however fail if multiple valid chains are contained in the additional certificates.
-#             Hence, cross-signed certificates with multiple chains will fail and raise a ValueError.
-#
-#         Raises:
-#             ValueError: If more than one chain can be constructed out of the additional certificates.
-#         """
-#
-#         # If the credential certificate is self-signed,
-#         try:
-#             self.certificate.verify_directly_issued_by(self.certificate)
-#             self._additional_certificates = []
-#             return
-#         except (ValueError, TypeError, crypto_exceptions.InvalidSignature):
-#             pass
-#
-#         additional_certificates = []
-#
-#         current_certificate = self.certificate
-#
-#         while current_certificate:
-#             issuer_certificate = self._get_issuer(current_certificate)
-#             if issuer_certificate is None or current_certificate == issuer_certificate:
-#                 break
-#             additional_certificates.append(issuer_certificate)
-#
-#         self.additional_certificates = additional_certificates
-#
-#     def _get_issuer(self, certificate: x509.Certificate) -> x509.Certificate | None:
-#         for additional_certificate in self.additional_certificates:
-#             try:
-#                 certificate.verify_directly_issued_by(additional_certificate)
-#                 return additional_certificate
-#             except (ValueError, TypeError, crypto_exceptions.InvalidSignature):
-#                 pass
-#
-#
-#
-#     def __len__(self) -> int:
-#         """Returns the number of certificates contained in this credential."""
-#         if self._additional_certificates is None:
-#             return 1
-#
-#         return len(self._additional_certificates) + 1
+class CredentialSerializer:
+    """The CredentialSerializer class provides methods for serializing and loading X.509 Credentials.
+
+    A complete credential consists of a private key, a matching certificate and the full chain including the root ca.
+
+    However, this object can also be used for partial credentials, e.g. missing private key or only parts or no
+    certificate chain at all.
+    """
+
+    _private_key: PrivateKey | None
+    _certificate: x509.Certificate | None
+    _additional_certificates: list[x509.Certificate]
+
+    def __init__(
+        self,
+        private_key: PrivateKey | None = None,
+        certificate: x509.Certificate | None = None,
+        additional_certificates: list[x509.Certificate] | None = None,
+    ) -> None:
+        """Initializes a CredentialSerializer with the provided private key, certificate and additional certificates.
+
+        Args:
+            private_key: The private key to include in the credential.
+            certificate: The certificate matching the private key.
+            additional_certificates: Any further certificates, usually this will only be the certificate chain.
+
+        Raises:
+            TypeError: If an invalid type is provided for one of the arguments.
+        """
+        self.private_key = private_key
+        self.certificate = certificate
+        if additional_certificates is None:
+            self.additional_certificates = []
+        else:
+            self.additional_certificates = additional_certificates
+
+    @property
+    def private_key(self) -> PrivateKey | None:
+        """Property to get the private key object.
+
+        Returns:
+            The private key object or None.
+        """
+        return self._private_key
+
+    @private_key.setter
+    def private_key(self, private_key: PrivateKey | None) -> None:
+        """Property to set the private key object.
+
+        Args:
+            private_key: The private key to include in the credential.
+
+        Raises:
+            TypeError: If the provided private key is not None or not a supported private key type.
+        """
+        if isinstance(private_key, PrivateKeySerializer):
+            private_key = private_key.as_crypto()
+
+        if not (private_key is None or isinstance(private_key, PrivateKey)):
+            err_msg = f'Expected private_key to be a PrivateKey object, but got {type(private_key)}.'
+            raise TypeError(err_msg)
+        self._private_key = private_key
+
+    @private_key.deleter
+    def private_key(self) -> None:
+        """Property to delete the private key object."""
+        self._private_key = None
+
+    @property
+    def certificate(self) -> x509.Certificate | None:
+        """Property to get the certificate object.
+
+        Returns:
+            The x509.Certificate object or None.
+        """
+        return self._certificate
+
+    @certificate.setter
+    def certificate(self, certificate: x509.Certificate | None) -> None:
+        """Property to set the certificate object.
+
+        Args:
+            certificate: The certificate matching the private key.
+
+        Raises:
+            TypeError: If the provided certificate is not None or a not a x509.Certificate object.
+        """
+        if not (certificate is None or isinstance(certificate, x509.Certificate)):
+            err_msg = f'Expected certificate to be a x509.Certificate object, but got {type(certificate)}.'
+            raise TypeError(err_msg)
+        self._certificate = certificate
+
+    @certificate.deleter
+    def certificate(self) -> None:
+        """Property to delete the certificate object."""
+        self._certificate = None
+
+    @property
+    def additional_certificates(self) -> list[x509.Certificate]:
+        """Property to get the additional certificates.
+
+        Returns:
+            A list of all additional certificates as x509.Certificate objects.
+        """
+        return self._additional_certificates
+
+    @additional_certificates.setter
+    def additional_certificates(self, additional_certificates: list[x509.Certificate] | None) -> None:
+        """Property to set the additional certificates.
+
+        Args:
+            additional_certificates: Any further certificates, usually this will only be the certificate chain.
+
+        Raises:
+            TypeError: If the provided additional_certificates is not None or not a list of x509.Certificate objects.
+
+        """
+        if additional_certificates is None:
+            self._additional_certificates = []
+            return
+
+        if not isinstance(additional_certificates, list):
+            err_msg = f'Expected additional_certificates to be a list, but got {type(additional_certificates)}.'
+            raise TypeError(err_msg)
+
+        for cert in additional_certificates:
+            if not isinstance(cert, x509.Certificate):
+                err_msg = (
+                    'The provided list of certificates contains at least one object that is not a certificate object.'
+                )
+                raise TypeError(err_msg)
+
+    @additional_certificates.deleter
+    def additional_certificates(self) -> None:
+        """Property to delete the additional_certificates object."""
+        self._additional_certificates = []
+
+    @classmethod
+    def from_serializers(
+        cls,
+        private_key_serializer: PrivateKeySerializer | None = None,
+        certificate_serializer: CertificateSerializer | None = None,
+        certificate_collection_serializer: CertificateCollectionSerializer | None = None,
+    ) -> CredentialSerializer:
+        """Creates a CredentialSerializer from the private key, certificate and certificate collection serializers.
+
+        Args:
+            private_key_serializer: PrivateKeySerializer object to use, if any.
+            certificate_serializer: CertificateSerializer object to use, if any.
+            certificate_collection_serializer: CertificateCollectionSerializer object to use, if any.
+
+        Returns:
+            The created CredentialSerializer.
+
+        Raises:
+            TypeError: If extracting the private key, certificate and certificate collection serializers failed.
+        """
+        try:
+            private_key = private_key_serializer.as_crypto() if private_key_serializer else None
+            certificate = certificate_serializer.as_crypto() if certificate_serializer else None
+            additional_certificates = (
+                certificate_collection_serializer.as_crypto() if certificate_collection_serializer else []
+            )
+        except Exception as exception:
+            err_msg = 'Failed to extract the private key, certificate and certificate collection serializers.'
+            raise TypeError(err_msg) from exception
+
+        return cls(private_key=private_key, certificate=certificate, additional_certificates=additional_certificates)
+
+    @classmethod
+    def from_pkcs12_bytes(cls, p12: bytes, password: bytes | None = None) -> CredentialSerializer:
+        """Creates a CredentialSerializer from a PKCS#12 structure.
+
+        Args:
+            p12: A PKCS#12 structure.
+            password: The password to decrypt the PKCS#12 file.
+
+        Returns:
+            The corresponding CredentialSerializer.
+
+        Raises:
+            TypeError: If the p12 is not a bytes object or the password is not None or a bytes object.
+            ValueError: If parsing and loading of the PKCS#12 file failed.
+        """
+        loaded_p12 = load_pkcs12_bytes(p12, password)
+        return cls.from_pkcs12(loaded_p12)
+
+    @classmethod
+    def from_pkcs12(cls, p12: pkcs12.PKCS12KeyAndCertificates) -> CredentialSerializer:
+        """Creates a CredentialSerializer from a PKCS#12 structure.
+
+        Args:
+            p12: A PKCS#12 structure.
+
+        Returns:
+            The corresponding CredentialSerializer.
+
+        Raises:
+            TypeError: If p12 is not a PKCS12KeyAndCertificates object.
+        """
+        if not isinstance(p12, pkcs12.PKCS12KeyAndCertificates):
+            err_msg = f'Expected p12 to be a PKCS12KeyAndCertificates object, but got {type(p12)}.'
+            raise TypeError(err_msg)
+
+        certificate = p12.cert.certificate if p12.cert else None
+        private_key = p12.key
+        p12_additional_certificates = p12.additional_certs if p12.additional_certs else []
+        additional_certificates = [cert.certificate for cert in p12_additional_certificates]
+
+        return cls(private_key, certificate, additional_certificates)
+
+    def as_pkcs12(self, password: None | bytes = None, friendly_name: bytes = b'') -> bytes:
+        """Gets the associated private key as bytes in a PKCS#12 structure.
+
+        Args:
+            password:
+                Password if the private key shall be encrypted, None otherwise.
+                Empty bytes will be interpreted as None.
+            friendly_name: The friendly_name to set in the PKCS#12 structure.
+
+        Returns:
+            Bytes object that contains the private key in a PKCS#12 structure.
+
+        Raises:
+            ValueError:
+                If the CredentialSerializer does not contain at least one of the following:
+                private key, certificate or certificate collection or getting the BestAvailableEncryption failed.
+        """
+        if self.private_key is None and self.certificate is None and not self.additional_certificates:
+            err_msg = (
+                'Cannot create a PKCS#12 structure without at least on of the following:'
+                'private key, certificate or certificate collection.'
+            )
+            raise ValueError(err_msg)
+        return pkcs12.serialize_key_and_certificates(
+            name=friendly_name,
+            key=self.private_key,
+            cert=self.certificate,
+            cas=self.additional_certificates,
+            encryption_algorithm=get_encryption_algorithm(password),
+        )
