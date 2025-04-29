@@ -198,7 +198,7 @@ class PublicKeySerializer:
             The corresponding PublicKeySerializer containing the public key contained in the provided private key.
 
         Raises:
-            TypeError: If the private key is not a private key object or the key type is not supported.
+            TypeError: If the private key is not a private key object, or the key type is not supported.
         """
         if not isinstance(private_key, typing.get_args(PrivateKey)):
             err_msg = f'Expected a private key object, but got {type(private_key)}.'
@@ -284,7 +284,7 @@ class PrivateKeySerializer:
             private_key: The private key object to be serialized.
 
         Raises:
-            TypeError: If the private key is not a PrivateKey object or the key type is not supported.
+            TypeError: If the private key is not a PrivateKey object or, the key type is not supported.
         """
         if not isinstance(private_key, typing.get_args(PrivateKey)):
             err_msg = f'Expected a private key object, but got {type(private_key)}.'
@@ -297,7 +297,7 @@ class PrivateKeySerializer:
         """Creates a PrivateKeySerializer from a PEM encoded public key.
 
         Args:
-            private_key: The private key as bytes object in PEM format.
+            private_key: The private key as a bytes object in PEM format.
             password: The password to encrypt the private key with
 
         Returns:
@@ -1120,7 +1120,7 @@ class CredentialSerializer:
 
     A complete credential consists of a private key, a matching certificate and the full chain including the root ca.
 
-    However, this object can also be used for partial credentials, e.g. missing private key or only parts or no
+    However, this object can also be used for partial credentials e.g., missing private key or only parts or no
     certificate chain at all.
     """
 
@@ -1200,7 +1200,7 @@ class CredentialSerializer:
             certificate: The certificate matching the private key.
 
         Raises:
-            TypeError: If the provided certificate is not None or a not a x509.Certificate object.
+            TypeError: If the provided certificate is not None or not a x509.Certificate object.
         """
         if not (certificate is None or isinstance(certificate, x509.Certificate)):
             err_msg = f'Expected certificate to be a x509.Certificate object, but got {type(certificate)}.'
