@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import enum
 import typing
 
 from cryptography import exceptions as crypto_exceptions
@@ -10,6 +11,42 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import Encoding, PrivateFormat, pkcs7, pkcs12
 
 from trustpoint_core.key_types import PrivateKey, PublicKey
+
+if typing.TYPE_CHECKING:
+    from typing import Self
+
+
+class CertificateFormat(enum.Enum):
+    """Supported certificate formats."""
+
+    mime_type: str
+    file_extension: str
+
+    PEM = ('pem', 'application/x-pem-file', '.pem')
+    DER = ('der', 'application/pkix-cert', '.cer')
+    PKCS7_PEM = ('pkcs7_pem', 'application/x-pkcs7-certificates', '.p7b')
+    PKCS7_DER = ('pkcs7_der', 'application/x-pkcs7-certificates', '.p7b')
+
+    def __new__(cls, value: None | str, mime_type: str = '', file_extension: str = '') -> Self:
+        """Extends the enum with a mime_type and file_extension.
+
+        Args:
+            value: The value to set.
+            mime_type: The mime type to set.
+            file_extension: The file extension to set.
+
+        Returns:
+            CertificateFileFormat: The constructed enum.
+        """
+        if value is None:
+            err_msg = 'None is not a valid certificate file format.'
+            raise ValueError(err_msg)
+
+        obj = object.__new__(cls)
+        obj._value_ = value
+        obj.mime_type = mime_type
+        obj.file_extension = file_extension
+        return obj
 
 
 def load_pkcs12_bytes(p12: bytes, password: bytes | None = None) -> pkcs12.PKCS12KeyAndCertificates:
@@ -567,6 +604,37 @@ class CertificateSerializer:
 
         return cls(loaded_certificate)
 
+    def as_format(self, certificate_format: CertificateFormat) -> bytes:
+        """Returns the certificate as bytes using the provided format.
+
+        Args:
+            certificate_format: The certificate format to use.
+
+        Returns:
+            The certificate as bytes using the provided format.
+
+        Raises:
+            ValueError: If the provided certificate format is not supported.
+            TypeError: If an invalid type was provided or an unexpected error occurred.
+        """
+        try:
+            if certificate_format == CertificateFormat.DER:
+                return self.as_der()
+            if certificate_format == CertificateFormat.PEM:
+                return self.as_pem()
+            if certificate_format == CertificateFormat.PKCS7_DER:
+                return self.as_pkcs7_der()
+            if certificate_format == CertificateFormat.PKCS7_PEM:
+                return self.as_pkcs7_pem()
+        except ValueError:
+            raise
+        except Exception as exception:
+            err_msg = f'Failed to get the the certificate in the requested format. {exception}'
+            raise TypeError(err_msg) from exception
+
+        err_msg = f'Invalid certificate format: {certificate_format}'
+        raise ValueError(err_msg)
+
     def as_pem(self) -> bytes:
         """Gets the associated certificate as bytes in PEM format.
 
@@ -955,6 +1023,35 @@ class CertificateCollectionSerializer:
         """
         return len(self._certificates)
 
+    def as_format(self, certificate_format: CertificateFormat) -> bytes:
+        """Returns the certificate collection as bytes using the provided format.
+
+        Args:
+            certificate_format: The certificate format to use.
+
+        Returns:
+            The certificate collection as bytes using the provided format.
+
+        Raises:
+            ValueError: If the provided certificate format is not supported.
+            TypeError: If an invalid type was provided or an unexpected error occurred.
+        """
+        try:
+            if certificate_format == CertificateFormat.PEM:
+                return self.as_pem()
+            if certificate_format == CertificateFormat.PKCS7_DER:
+                return self.as_pkcs7_der()
+            if certificate_format == CertificateFormat.PKCS7_PEM:
+                return self.as_pkcs7_pem()
+        except ValueError:
+            raise
+        except Exception as exception:
+            err_msg = f'Failed to get the the certificate collection in the requested format. {exception}'
+            raise TypeError(err_msg) from exception
+
+        err_msg = f'Invalid certificate format: {certificate_format}'
+        raise ValueError(err_msg)
+
     def as_crypto(self) -> list[x509.Certificate]:
         """Gets the associated certificate collection as a list of x509.Certificate objects.
 
@@ -1226,6 +1323,10 @@ class CredentialSerializer:
         private_key = p12.key
         p12_additional_certificates = p12.additional_certs if p12.additional_certs else []
         additional_certificates = [cert.certificate for cert in p12_additional_certificates]
+
+        if not isinstance(private_key, typing.get_args(PrivateKey)):
+            err_msg = f'p12.key contains is a key type that is not supported: {type(private_key)}.'
+            raise TypeError(err_msg)
 
         return cls(private_key, certificate, additional_certificates)
 

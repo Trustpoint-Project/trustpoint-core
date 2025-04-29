@@ -3,17 +3,18 @@
 from __future__ import annotations
 
 import enum
-from typing import TYPE_CHECKING, cast
+import typing
+from typing import TYPE_CHECKING
 
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec, rsa
+
+from trustpoint_core.key_types import PrivateKey, PublicKey
 
 if TYPE_CHECKING:
     from typing import Self
 
     from cryptography import x509
-
-    from trustpoint_core.key_types import PrivateKey, PublicKey
 
 
 RSA_MIN_KEY_SIZE = 2048
@@ -599,8 +600,16 @@ class PublicKeyAlgorithmOid(enum.Enum):
 
         Returns:
             The matching PublicKeyAlgorithmOid Enum.
+
+        Raises:
+            TypeError: If an unsupported key type contained in the certificate.
         """
-        return cls.from_public_key(certificate.public_key())
+        public_key = certificate.public_key
+        if not isinstance(public_key, typing.get_args(PublicKey)):
+            err_msg = f'Unsupported key type contained in the certificate: {type(public_key)}.'
+            raise TypeError(err_msg)
+
+        return cls.from_public_key(public_key)
 
     @classmethod
     def from_private_key(cls, private_key: PrivateKey) -> PublicKeyAlgorithmOid:
@@ -1038,7 +1047,7 @@ class PublicKeyInfo:
             return cls(
                 public_key_algorithm_oid=PublicKeyAlgorithmOid.ECC,
                 key_size=public_key.key_size,
-                named_curve=cast(NamedCurve, NamedCurve[public_key.curve.name.upper()]),
+                named_curve=NamedCurve[public_key.curve.name.upper()],
             )
         err_msg = 'Unsupported public key type found. Must be RSA or ECC key.'
         raise TypeError(err_msg)
@@ -1071,7 +1080,12 @@ class PublicKeyInfo:
         Raises:
             TypeError: If the key provided is of a type that is not supported.
         """
-        return cls.from_public_key(certificate.public_key())
+        public_key = certificate.public_key()
+        if not isinstance(public_key, typing.get_args(PublicKey)):
+            err_msg = f'Unsupported key type contained in the certificate: {type(public_key)}.'
+            raise TypeError(err_msg)
+
+        return cls.from_public_key(public_key)
 
 
 class SignatureSuite:
@@ -1281,7 +1295,12 @@ class KeyPairGenerator:
         Raises:
             TypeError: If the key type of the provided public key within the certificate is not supported.
         """
-        return cls.generate_key_pair_for_public_key(certificate.public_key())
+        public_key = certificate.public_key()
+        if not isinstance(public_key, typing.get_args(PublicKey)):
+            err_msg = f'Unsupported key type contained in the certificate: {type(public_key)}.'
+            raise TypeError(err_msg)
+
+        return cls.generate_key_pair_for_public_key(public_key)
 
     @staticmethod
     def generate_key_pair_for_public_key_info(
