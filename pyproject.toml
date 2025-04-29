@@ -4,16 +4,17 @@ version = "0.0.5"
 description = "Trustpoint core functionalities used by several other Trustpoint repositories."
 requires-python = ">=3.11"
 dependencies = [
-    "cryptography>=44.0.1",
+    "cryptography>=44.0.2",
+    "hatchling>=1.27.0",
 ]
 
 [dependency-groups]
 dev = [
     "mypy>=1.15.0",
-    "pytest>=8.3.4",
-    "ruff>=0.9.7",
-    "pytest-md-report>=0.6.3",
+    "pytest>=8.3.5",
     "pytest-html>=4.1.1",
+    "pytest-md-report>=0.6.3",
+    "ruff>=0.11.7",
 ]
 
 [build-system]
