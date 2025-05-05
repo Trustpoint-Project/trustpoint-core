@@ -1,24 +1,17 @@
 name: MyPy
 
+# Trigger this workflow on pull requests, ensuring type checks are performed before merging.
 on: [pull_request]
 
 jobs:
   mypy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # Use the latest Ubuntu runner for compatibility and performance.
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4  # Ensures the repository code is available.
 
-      - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v5
-        with:
-          enable-cache: true
-          version: "0.6.3"
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version-file: "pyproject.toml"
+      - name: Setup uv environment
+        uses: ./.github/actions/setup-uv-action  # Call the reusable setup step.
 
       - name: Run MyPy
-        run: uv run mypy .
+        run: uv run mypy . # Runs MyPy type checker using `uv` package manager.
