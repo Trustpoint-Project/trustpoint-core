@@ -16,17 +16,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v5
-        with:
-          enable-cache: true
-          version: "0.6.3"
-          cache-dependency-glob: "uv.lock"
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version-file: "pyproject.toml"
+      - name: Setup uv environment
+        uses: ./.github/actions/setup-uv-action  # Call the reusable setup step.
 
       - name: Install the project
         run: uv sync --all-extras --dev

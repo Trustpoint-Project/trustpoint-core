@@ -1,0 +1,16 @@
+name: Setup Environment
+description: Checks out code and installs the current uv version and it's dependencies defined inside the pyproject.toml file.
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install and setup uv
+      uses: astral-sh/setup-uv@v6  # Sets up `uv` package manager.
+      with:
+        enable-cache: true  # Caches `uv` installation for faster runs.
+        cache-dependency-glob: "uv.lock" # Invalidate cache when the lockfile changes.
+
+    - name: Set up Python
+      uses: actions/setup-python@v5  # Sets up Python environment.
+      with:
+        python-version-file: "pyproject.toml"  # Ensures the correct Python version is used.
