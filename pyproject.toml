@@ -33,11 +33,7 @@ multiline-quotes = "double"
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [
-    "ANN401",   # Since django makes extensive use of the Any type, we are OK with using it.
     "COM812",   # Not compatible with the formatter
-    # TODO(AlexHx8472): We should use this in the future.
-    "TD003",
-    "ERA001"
 ]
 
 [tool.ruff.lint.per-file-ignores]

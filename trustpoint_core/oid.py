@@ -576,7 +576,7 @@ class PublicKeyAlgorithmOid(enum.Enum):
     ECC = ('1.2.840.10045.2.1', 'ECC')
     RSA = ('1.2.840.113549.1.1.1', 'RSA')
 
-    # TODO(AlexHx8472): Support ED25519, ED448  # noqa: FIX002
+    # TODO(AlexHx8472): Support ED25519, ED448  # noqa: FIX002, TD003
 
     def __new__(cls, dotted_string: str, verbose_name: str) -> Self:
         """Sets the values for this multi value enum.
@@ -775,7 +775,7 @@ class AlgorithmIdentifier(enum.Enum):
         HashAlgorithm.SHA3_512,
     )
 
-    # TODO(AlexHx8472): Add RSA PSS support.    # noqa: FIX002
+    # TODO(AlexHx8472): Add RSA PSS support.    # noqa: FIX002, TD003
 
     ECDSA_SHA1 = (
         '1.2.840.10045.4.1',
