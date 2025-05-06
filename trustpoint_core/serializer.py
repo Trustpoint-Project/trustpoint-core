@@ -13,6 +13,7 @@ from cryptography.hazmat.primitives.serialization import Encoding, PrivateFormat
 from trustpoint_core.key_types import PrivateKey, PublicKey
 
 if typing.TYPE_CHECKING:
+    from collections.abc import Callable
     from typing import Self
 
 
@@ -37,6 +38,38 @@ class CertificateFormat(enum.Enum):
 
         Returns:
             CertificateFileFormat: The constructed enum.
+        """
+        if value is None:
+            err_msg = 'None is not a valid certificate file format.'
+            raise ValueError(err_msg)
+
+        obj = object.__new__(cls)
+        obj._value_ = value
+        obj.mime_type = mime_type
+        obj.file_extension = file_extension
+        return obj
+
+
+class CredentialFileFormat(enum.Enum):
+    """Supported credential file formats, usually used for download and upload features."""
+
+    mime_type: str
+    file_extension: str
+
+    PKCS12 = ('pkcs12', 'application/pkcs12', '.p12')
+    PEM_ZIP = ('pem_zip', 'application/zip', '.zip')
+    PEM_TAR_GZ = ('pem_tar_gz', 'application/gzip', '.tar.gz')
+
+    def __new__(cls, value: None | str, mime_type: str = '', file_extension: str = '') -> Self:
+        """Extends the enum with a mime_type and file_extension.
+
+        Args:
+            value: The value to set.
+            mime_type: The mime type to set.
+            file_extension: The file extension to set.
+
+        Returns:
+            CredentialFileFormat: The constructed enum.
         """
         if value is None:
             err_msg = 'None is not a valid certificate file format.'
@@ -186,6 +219,34 @@ class PublicKeySerializer:
             raise TypeError(err_msg)
 
         return cls(loaded_public_key)
+
+    @classmethod
+    def from_bytes(cls, public_key: bytes) -> PublicKeySerializer:
+        """Creates a PublicKeySerializer from a public key in bytes in PEM or DER format.
+
+        Args:
+            public_key:  The public key as a bytes object in PEM or DER format.
+
+        Returns:
+            The corresponding PublicKeySerializer containing the provided public key.
+
+        Raises:
+            TypeError: If the public key is not a bytes object or the key type is not supported.
+            ValueError: If loading the public key failed.
+        """
+        loaders: list[Callable[[bytes], PublicKeySerializer]] = [
+            cls.from_pem,
+            cls.from_der,
+        ]
+        err_msg = 'Failed to load public key. Either wrong format or corrupted public key.'
+        for loader in loaders:
+            try:
+                return loader(public_key)
+            except (TypeError, ValueError):
+                pass
+            except Exception as exception:
+                raise ValueError(err_msg) from exception
+        raise ValueError(err_msg)
 
     @classmethod
     def from_private_key(cls, private_key: PrivateKey) -> PublicKeySerializer:
@@ -378,12 +439,8 @@ class PrivateKeySerializer:
             The corresponding PrivateKeySerializer containing the provided key.
 
         Raises:
-            TypeError:
-                If the p12 is not a bytes object,
-                the password is not None or a bytes object or,
-                the private key is not supported.
-            ValueError:
-                If parsing and loading of the PKCS#12 file failed or, no private key is available.
+            TypeError: If the private key type is not supported.
+            ValueError: If parsing and loading of the PKCS#12 file failed or, no private key is available.
         """
         loaded_p12 = load_pkcs12_bytes(p12, password)
         return cls.from_pkcs12(loaded_p12)
@@ -413,6 +470,36 @@ class PrivateKeySerializer:
             raise TypeError(err_msg)
 
         return cls(private_key)
+
+    @classmethod
+    def from_bytes(cls, private_key: bytes, password: bytes | None) -> PrivateKeySerializer:
+        """Creates a PrivateKeySerializer from a private key in bytes in PEM, DER or PKCS#12 format.
+
+        Args:
+            private_key:  The private key as a bytes object in PEM or DER format.
+            password: The password to encrypt the private key with if it is encrypted.
+
+        Returns:
+            The corresponding PrivateKeySerializer containing the provided private key.
+
+        Raises:
+            TypeError: If the private key type is not supported.
+            ValueError: If loading the private key failed.
+        """
+        loaders: list[Callable[[bytes, bytes | None], PrivateKeySerializer]] = [
+            cls.from_pem,
+            cls.from_der,
+            cls.from_pkcs12_bytes,
+        ]
+        err_msg = 'Failed to load private key. Either wrong format, wrong password or corrupted private key.'
+        for loader in loaders:
+            try:
+                return loader(private_key, password)
+            except (TypeError, ValueError):
+                pass
+            except Exception as exception:
+                raise ValueError(err_msg) from exception
+        raise ValueError(err_msg)
 
     def as_pkcs1_der(self, password: None | bytes = None) -> bytes:
         """Gets the associated private key as bytes in PKCS#1 DER format.
@@ -603,6 +690,34 @@ class CertificateSerializer:
             raise ValueError(err_msg) from exception
 
         return cls(loaded_certificate)
+
+    @classmethod
+    def from_bytes(cls, certificate: bytes) -> CertificateSerializer:
+        """Creates a CertificateSerializer from a private key in bytes in PEM or DER format.
+
+        Args:
+            certificate: The certificate as a bytes object in PEM or DER format.
+
+        Returns:
+            The corresponding CertificateSerializer containing the provided certificate.
+
+        Raises:
+            TypeError: If the certificate is not a bytes object.
+            ValueError: If loading the certificate failed.
+        """
+        loaders: list[Callable[[bytes], CertificateSerializer]] = [
+            cls.from_pem,
+            cls.from_der,
+        ]
+        err_msg = 'Failed to load certificate. Either wrong format or corrupted certificate.'
+        for loader in loaders:
+            try:
+                return loader(certificate)
+            except (TypeError, ValueError):
+                pass
+            except Exception as exception:
+                raise ValueError(err_msg) from exception
+        raise ValueError(err_msg)
 
     def as_format(self, certificate_format: CertificateFormat) -> bytes:
         """Returns the certificate as bytes using the provided format.
@@ -986,6 +1101,35 @@ class CertificateCollectionSerializer:
 
         return cls(certificates)
 
+    @classmethod
+    def from_bytes(cls, certificate_collection: bytes) -> CertificateCollectionSerializer:
+        """Creates a CertificateCollectionSerializer from a private key in bytes in PEM or PKCS#7 (PEM | DER) format.
+
+        Args:
+            certificate_collection: The certificate collection as a bytes object in PEM or PKCS#7 (PEM | DER) format.
+
+        Returns:
+            The corresponding CertificateCollectionSerializer containing the provided certificates.
+
+        Raises:
+            TypeError: If the certificate_collection is not a bytes object.
+            ValueError: If loading the certificates failed.
+        """
+        loaders: list[Callable[[bytes], CertificateCollectionSerializer]] = [
+            cls.from_pem,
+            cls.from_pkcs7_der,
+            cls.from_pkcs7_pem,
+        ]
+        err_msg = 'Failed to load certificate. Either wrong format or corrupted certificate.'
+        for loader in loaders:
+            try:
+                return loader(certificate_collection)
+            except (TypeError, ValueError):
+                pass
+            except Exception as exception:
+                raise ValueError(err_msg) from exception
+        raise ValueError(err_msg)
+
     def __add__(
         self,
         other: x509.Certificate | CertificateSerializer | CertificateCollectionSerializer,
@@ -1183,6 +1327,12 @@ class CredentialSerializer:
         """Property to delete the private key object."""
         self._private_key = None
 
+    def get_private_key_serializer(self) -> PrivateKeySerializer | None:
+        """Gets the private key serializer."""
+        if not self.private_key:
+            return None
+        return PrivateKeySerializer(self.private_key)
+
     @property
     def certificate(self) -> x509.Certificate | None:
         """Property to get the certificate object.
@@ -1211,6 +1361,12 @@ class CredentialSerializer:
     def certificate(self) -> None:
         """Property to delete the certificate object."""
         self._certificate = None
+
+    def get_certificate_serializer(self) -> CertificateSerializer | None:
+        """Gets the certificate as a CertificateSerializer object."""
+        if not self.certificate:
+            return None
+        return CertificateSerializer(self.certificate)
 
     @property
     def additional_certificates(self) -> list[x509.Certificate]:
@@ -1247,10 +1403,18 @@ class CredentialSerializer:
                 )
                 raise TypeError(err_msg)
 
+        self._additional_certificates = additional_certificates
+
     @additional_certificates.deleter
     def additional_certificates(self) -> None:
         """Property to delete the additional_certificates object."""
         self._additional_certificates = []
+
+    def get_additional_certificates_serializer(self) -> CertificateCollectionSerializer | None:
+        """Gets the additional certificates as a CertificateCollectionSerializer object."""
+        if not self.additional_certificates:
+            return None
+        return CertificateCollectionSerializer(self.additional_certificates)
 
     @classmethod
     def from_serializers(
@@ -1360,3 +1524,29 @@ class CredentialSerializer:
             cas=self.additional_certificates,
             encryption_algorithm=get_encryption_algorithm(password),
         )
+
+    def get_full_chain_as_crypto(self) -> list[x509.Certificate]:
+        """Gets the full chain as a list of x509.Certificate objects.
+
+        Returns:
+            A list of x509.Certificate objects representing
+            the full chain with the first element being the credential certificate.
+        """
+        if self.certificate:
+            return [
+                self.certificate,
+                *self.additional_certificates,
+            ]
+
+        return [
+            *self.additional_certificates,
+        ]
+
+    def get_full_chain_as_serializer(self) -> CertificateCollectionSerializer:
+        """Gets the full chain as a CertificateCollectionSerializer object.
+
+        Returns:
+            A CertificateCollectionSerializer object containing
+            the full chain with the first element being the credential certificate.
+        """
+        return CertificateCollectionSerializer(self.get_full_chain_as_crypto())
