@@ -429,6 +429,14 @@ class NameOid(enum.Enum):
         obj.verbose_name = verbose_name
         return obj
 
+    def __init__(self, _value: str) -> None:
+        """Only for typing, this will not be executed for multivalue enums.
+
+        Args:
+            _value: The main value corresponding to the enum object.
+        """
+        del _value
+
 
 class CertificateExtensionOid(enum.Enum):
     """Certificate Extension OID Enum."""
@@ -482,6 +490,13 @@ class CertificateExtensionOid(enum.Enum):
         obj.verbose_name = verbose_name
         return obj
 
+    def __init__(self, _value: str) -> None:
+        """Only for typing, this will not be executed for multivalue enums.
+
+        Args:
+            _value: The main value corresponding to the enum object.
+        """
+        del _value
 
 class NamedCurve(enum.Enum):
     """Named Curve Enum."""
@@ -557,6 +572,14 @@ class NamedCurve(enum.Enum):
         obj.ossl_curve_name = ossl_curve_name
         return obj
 
+    def __init__(self, _value: str) -> None:
+        """Only for typing, this will not be executed for multivalue enums.
+
+        Args:
+            _value: The main value corresponding to the enum object.
+        """
+        del _value
+
 
 class RsaPaddingScheme(enum.Enum):
     """RSA Padding Scheme Enum."""
@@ -590,6 +613,14 @@ class PublicKeyAlgorithmOid(enum.Enum):
         obj.dotted_string = dotted_string
         obj.verbose_name = verbose_name
         return obj
+
+    def __init__(self, _value: str) -> None:
+        """Only for typing, this will not be executed for multivalue enums.
+
+        Args:
+            _value: The main value corresponding to the enum object.
+        """
+        del _value
 
     @classmethod
     def from_certificate(cls, certificate: x509.Certificate) -> PublicKeyAlgorithmOid:
@@ -686,6 +717,14 @@ class HashAlgorithm(enum.Enum):
         obj.verbose_name = verbose_name
         obj.hash_algorithm = hash_algorithm
         return obj
+
+    def __init__(self, _value: str) -> None:
+        """Only for typing, this will not be executed for multivalue enums.
+
+        Args:
+            _value: The main value corresponding to the enum object.
+        """
+        del _value
 
 
 class AlgorithmIdentifier(enum.Enum):
@@ -874,6 +913,14 @@ class AlgorithmIdentifier(enum.Enum):
         obj.hash_algorithm = hash_algorithm
         return obj
 
+    def __init__(self, _value: str) -> None:
+        """Only for typing, this will not be executed for multivalue enums.
+
+        Args:
+            _value: The main value corresponding to the enum object.
+        """
+        del _value
+
     @classmethod
     def from_certificate(cls, certificate: x509.Certificate) -> AlgorithmIdentifier:
         """Gets the AlgorithmIdentifier enum matching the signature used to sign the certificate.
@@ -925,6 +972,14 @@ class HmacAlgorithm(enum.Enum):
         obj.dotted_string = dotted_string
         obj.hash_algorithm = hash_algorithm
         return obj
+
+    def __init__(self, _value: str) -> None:
+        """Only for typing, this will not be executed for multivalue enums.
+
+        Args:
+            _value: The main value corresponding to the enum object.
+        """
+        del _value
 
 
 class PublicKeyInfo:
