@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import enum
 import typing
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from cryptography.hazmat.primitives import hashes
@@ -21,485 +22,356 @@ RSA_MIN_KEY_SIZE = 2048
 EC_MIN_KEY_SIZE = 128
 
 
-class NameOid(enum.Enum):
-    """Name OID Enum."""
+@dataclass(frozen=True)
+class NameOidData:
+    """The Name OID Data class holding all of the information."""
 
     dotted_string: str
-    abbreviation: str
+    abbreviation: str | None
     full_name: str
     verbose_name: str
 
-    OBJECT_CLASS = ('2.5.4.0', '', 'objectClass', 'Object Class')
-    ALIASED_ENTRY_NAME = ('2.5.4.1', '', 'aliasedEntryName', 'Aliased Entry Name')
-    KNOWLEDGE_INFORMATION = (
-        '2.5.4.2',
-        '',
-        'knowledgeInformation',
-        'Knowledge Information',
-    )
-    COMMON_NAME = ('2.5.4.3', 'CN', 'commonName', 'Common Name')
-    SURNAME = ('2.5.4.4', 'SN', 'Surname', 'Surname')
-    SERIAL_NUMBER = ('2.5.4.5', '', 'serialNumber', 'Serial Number')
-    COUNTRY_NAME = ('2.5.4.6', 'C', 'countryName', 'Country Name')
-    LOCALITY_NAME = ('2.5.4.7', 'L', 'localityName', 'Locality Name')
-    STATE_OR_PROVINCE_NAME = (
-        '2.5.4.8',
-        'ST',
-        'stateOrProvinceName',
-        'State or Province Name',
-    )
-    STREET_ADDRESS = ('2.5.4.9', '', 'streetAddress', 'Street Address')
-    ORGANIZATION_NAME = ('2.5.4.10', 'O', 'organizationName', 'Organization Name')
-    ORGANIZATIONAL_UNIT_NAME = (
-        '2.5.4.11',
-        'OU',
-        'organizationalUnitName',
-        'Organizational Unit Name',
-    )
-    TITLE = ('2.5.4.12', 'T', 'title', 'Title')
-    DESCRIPTION = ('2.5.4.13', '', 'description', 'Description')
-    SEARCH_GUIDE = ('2.5.4.14', '', 'searchGuide', 'Search Guide')
-    BUSINESS_CATEGORY = ('2.5.4.15', '', 'businessCategory', 'Business Category')
-    POSTAL_ADDRESS = ('2.5.4.16', '', 'postalAddress', 'Postal Address')
-    POSTAL_CODE = ('2.5.4.17', '', 'postalCode', 'Postal Code')
-    POST_OFFICE_BOX = ('2.5.4.18', '', 'postOfficeBox', 'Post Office Box')
-    PHYSICAL_DELIVERY_OFFICE_NAME = (
-        '2.5.4.19',
-        '',
-        'physicalDeliveryOfficeName',
-        'Physical Delivery Office Name',
-    )
-    TELEPHONE_NUMBER = ('2.5.4.20', '', 'telephoneNumber', 'Telephone Number')
-    TELEX_NUMBER = ('2.5.4.21', '', 'telexNumber', 'Telex Number')
-    TELEX_TERMINAL_IDENTIFIER = (
-        '2.5.4.22',
-        '',
-        'telexTerminalIdentifier',
-        'Telex Terminal Identifier',
-    )
-    FACSIMILE_TELEPHONE_NUMBER = (
-        '2.5.4.23',
-        '',
-        'facsimileTelephoneNumber',
-        'Facsimile Telephone Number',
-    )
-    X121_Address = ('2.5.4.24', '', 'x121Address', 'X121 Address')
-    INTERNATIONAL_ISD_NUMBER = (
-        '2.5.4.25',
-        '',
-        'internationalISDNumber',
-        'International ISD Number',
-    )
-    REGISTERED_ADDRESS = ('2.5.4.26', '', 'registeredAddress', 'Registered Address')
-    DESTINATION_INDICATOR = (
-        '2.5.4.27',
-        '',
-        'destinationIndicator',
-        'Destination Indicator',
-    )
-    PREFERRED_DELIVERY_METHOD = (
-        '2.5.4.28',
-        '',
-        'preferredDeliveryMethod',
-        'Preferred Delivery Method',
-    )
-    PRESENTATION_ADDRESS = (
-        '2.5.4.29',
-        '',
-        'presentationAddress',
-        'Presentation Address',
-    )
-    SUPPORTED_APPLICATION_CONTEXT = (
-        '2.5.4.30',
-        '',
-        'supportedApplicationContext',
-        'Supported Application Context',
-    )
-    MEMBER = ('2.5.4.31', '', 'member', 'Member')
-    OWNER = ('2.5.4.32', '', 'owner', 'Owner')
-    ROLE_OCCUPANT = ('2.5.4.33', '', 'roleOccupant', 'Role Occupant')
-    SEE_ALSO = ('2.5.4.34', '', 'seeAlso', 'See Also')
-    USER_PASSWORD = ('2.5.4.35', '', 'userPassword', 'User Password')
-    USER_CERTIFICATE = ('2.5.4.36', '', 'userCertificate', 'User Certificate')
-    CA_Certificate = ('2.5.4.37', '', 'cACertificate', 'CA Certificate')
-    AUTHORITY_REVOCATION_LIST = (
-        '2.5.4.38',
-        '',
-        'authorityRevocationList',
-        'Authority Revocation List',
-    )
-    CERTIFICATE_REVOCATION_LIST = (
-        '2.5.4.39',
-        '',
-        'certificateRevocationList',
-        'Certificate Revocation List',
-    )
-    CROSS_CERTIFICATE_PAIR = (
-        '2.5.4.40',
-        '',
-        'crossCertificatePair',
-        'Cross Certificate Pair',
-    )
-    NAME = ('2.5.4.41', '', 'name', 'Name')
-    GIVEN_NAME = ('2.5.4.42', 'GN', 'givenName', 'Given name')
-    INITIALS = ('2.5.4.43', '', 'initials', 'Initials')
-    GENERATION_QUALIFIER = (
-        '2.5.4.44',
-        '',
-        'generationQualifier',
-        'Generation Qualifier',
-    )
-    X500_UNIQUE_IDENTIFIER = (
-        '2.5.4.45',
-        '',
-        'x500UniqueIdentifier',
-        'X500 Unique identifier',
-    )
-    DN_QUALIFIER = ('2.5.4.46', '', 'dnQualifier', 'DN Qualifier')
-    ENHANCED_SEARCH_GUIDE = (
-        '2.5.4.47',
-        '',
-        'enhancedSearchGuide',
-        'Enhanced Search Guide',
-    )
-    PROTOCOL_INFORMATION = (
-        '2.5.4.48',
-        '',
-        'protocolInformation',
-        'Protocol Information',
-    )
-    DISTINGUISHED_NAME = ('2.5.4.49', '', 'distinguishedName', 'Distinguished Name')
-    UNIQUE_MEMBER = ('2.5.4.50', '', 'uniqueMember', 'Unique Member')
-    HOUSE_IDENTIFIER = ('2.5.4.51', '', 'houseIdentifier', 'House Identifier')
-    SUPPORTED_ALGORITHMS = (
-        '2.5.4.52',
-        '',
-        'supportedAlgorithms',
-        'Supported Algorithms',
-    )
-    DELTA_REVOCATION_LIST = (
-        '2.5.4.53',
-        '',
-        'deltaRevocationList',
-        'Delta Revocation List',
-    )
-    DMD_NAME = ('2.5.4.54', '', 'dmdName', 'DMD Name')
-    CLEARANCE = ('2.5.4.55', '', 'clearance', 'Clearance')
-    DEFAULT_DIR_QOP = ('2.5.4.56', '', 'defaultDirQop', 'Default DIR QOP')
-    ATTRIBUTE_INTEGRITY_INFO = (
-        '2.5.4.57',
-        '',
-        'attributeIntegrityInfo',
-        'Attribute Integrity Info',
-    )
-    ATTRIBUTE_CERTIFICATE = (
-        '2.5.4.58',
-        '',
-        'attributeCertificate',
-        'Attribute Certificate',
-    )
-    ATTRIBUTE_CERTIFICATE_REVOCATION_LIST = (
-        '2.5.4.59',
-        '',
-        'attributeCertificateRevocationList',
-        'Attribute Certificate Revocation List',
-    )
-    CONF_KEY_INFO = ('2.5.4.60', '', 'confKeyInfo', 'Conf Key Info')
-    AA_Certificate = ('2.5.4.61', '', 'aACertificate', 'AA Certificate')
-    ATTRIBUTE_DESCRIPTOR_CERTIFICATE = (
-        '2.5.4.62',
-        '',
-        'attributeDescriptorCertificate',
-        'Attribute Descriptor Certificate',
-    )
-    ATTRIBUTE_AUTHORITY_REVOCATION_LIST = (
-        '2.5.4.63',
-        '',
-        'attributeAuthorityRevocationList',
-        'Attribute Authority Revocation List',
-    )
-    FAMILY_INFORMATION = ('2.5.4.64', '', 'familyInformation', 'Family Information')
-    PSEUDONYM = ('2.5.4.65', '', 'pseudonym', 'Pseudonym')
-    COMMUNICATIONS_SERVICE = (
-        '2.5.4.66',
-        '',
-        'communicationsService',
-        'Communications Service',
-    )
-    COMMUNICATIONS_NETWORK = (
-        '2.5.4.67',
-        '',
-        'communicationsNetwork',
-        'Communications Network',
-    )
-    CERTIFICATION_PRACTICE_STMT = (
-        '2.5.4.68',
-        '',
-        'certificationPracticeStmt',
-        'Certification Practice Statement',
-    )
-    CERTIFICATE_POLICY = ('2.5.4.69', '', 'certificatePolicy', 'Certificate Policy')
-    PKI_PATH = ('2.5.4.70', '', 'pkiPath', 'PKI Path')
-    PRIVILEGE_POLICY = ('2.5.4.71', '', 'privilegePolicy', 'Privilege Policy')
-    ROLE = ('2.5.4.72', '', 'role', 'Role')
-    PMI_DELEGATION_PATH = ('2.5.4.73', '', 'pmiDelegationPath', 'PMI Delegation Path')
-    PROTECTED_PRIVILEGE_POLICY = (
-        '2.5.4.74',
-        '',
-        'protectedPrivilegePolicy',
-        'Protected Privilege Policy',
-    )
-    XML_PRIVILEGE_INFO = ('2.5.4.75', '', 'xMLPrivilegeInfo', 'XML Privilege Info')
-    XML_PRIV_POLICY = ('2.5.4.76', '', 'xmlPrivPolicy', 'XML Privilege Policy')
-    UUID_PAIR = ('2.5.4.77', '', 'uuidPair', 'UUID Pair')
-    TAG_OID = ('2.5.4.78', '', 'tagOid', 'Tag OID')
-    UII_FORMAT = ('2.5.4.79', '', 'uiiFormat', 'Unique Item Identifier Format')
-    UII_IN_URN = ('2.5.4.80', '', 'uiiInUrn', 'Unique Item Identifier in URN')
-    CONTENT_URL = ('2.5.4.81', '', 'contentUrl', 'Content URL')
-    PERMISSION = ('2.5.4.82', '', 'permission', 'Permission')
-    URI = ('2.5.4.83', '', 'uri', 'Uniform Resource Identifier (URI)')
-    PWD_ATTRIBUTE = ('2.5.4.84', '', 'pwdAttribute', 'Password Attribute')
-    USER_PWD = ('2.5.4.85', '', 'userPwd', 'User Password')
-    URN = ('2.5.4.86', '', 'urn', 'Uniform Resource Name (URN)')
-    URL = ('2.5.4.87', '', 'url', 'Uniform Resource Locator (URL)')
-    UTM_COORDINATES = (
-        '2.5.4.88',
-        '',
-        'utmCoordinates',
-        'UTM (Universal Transverse Mercator) Coordinates',
-    )
-    URN_C = ('2.5.4.89', '', 'urnC', 'Uniform Resource Locator Component (urnC)')
-    UII = ('2.5.4.90', '', 'uii', 'Unique Item Identifier (UII)')
-    EPC = ('2.5.4.91', '', 'epc', 'Electronic Product Code')
-    TAG_AFI = ('2.5.4.92', '', 'tagAfi', 'Tag Application Family Identifier (Tag AFI)')
-    EPC_FORMAT = ('2.5.4.93', '', 'epcFormat', 'Electronic Product Code Format')
-    EPC_IN_URN = ('2.5.4.94', '', 'epcInUrn', 'Electronic Product Code in URN')
-    LDAP_URL = ('2.5.4.95', '', 'ldapUrl', 'LDAP URL')
-    TAG_LOCATION = ('2.5.4.96', '', 'tagLocation', 'Tag Location')
-    ORGANIZATION_IDENTIFIER = (
-        '2.5.4.97',
-        '',
-        'organizationIdentifier',
-        'Organization Identifier',
-    )
-    COUNTRY_CODE_3C = (
-        '2.5.4.98',
-        '',
-        'countryCode3c',
-        'Country Code 3C (ISO 3166-1 alpha-3)',
-    )
-    COUNTRY_CODE_3N = (
-        '2.5.4.99',
-        '',
-        'countryCode3n',
-        'Country Code 3N ( ISO 3166-1 numeric-3)',
-    )
-    DNS_NAME = ('2.5.4.100', '', 'dnsName', 'DNS Name')
-    EE_PK_CERTIFICATE_REVOCATION_LIST = (
-        '2.5.4.101',
-        '',
-        'eepkCertificateRevocationList',
-        'End-Entity Public-Key Certificate Revocation List',
-    )
-    EE_ATTR_CERTIFICATE_REVOCATION_LIST = (
-        '2.5.4.102',
-        '',
-        'eeAttrCertificateRevocationList',
-        'End-Entity Attribute Certificate Revocation List',
-    )
-    SUPPORTED_PUBLIC_KEY_ALGORITHMS = (
-        '2.5.4.103',
-        '',
-        'supportedPublicKeyAlgorithms',
-        'Supported Public-Key Algorithms',
-    )
-    INT_EMAIL = ('2.5.4.104', '', 'intEmail', 'Internationalized Email Address')
-    JID = ('2.5.4.105', '', 'jid', 'Jabber Identifier')
-    OBJECT_IDENTIFIER = ('2.5.4.106', '', 'objectIdentifier', 'Object Identifier')
 
-    # GOST Algorithms, RFC 9215, Russian, Broken Cypher!
-    OGRN = (
-        '1.2.643.100.1',
-        '',
-        'ogrn',
-        'Main State Registration Number of juridical entities (OGRN)',
+class NameOid(enum.Enum):
+    """Name OID Enum holding OID metadata as dataclass instances."""
+
+    OBJECT_CLASS = NameOidData('2.5.4.0', None, 'objectClass', 'Object Class')
+    ALIASED_ENTRY_NAME = NameOidData('2.5.4.1', None, 'aliasedEntryName', 'Aliased Entry Name')
+    KNOWLEDGE_INFORMATION = NameOidData('2.5.4.2', None, 'knowledgeInformation', 'Knowledge Information')
+    COMMON_NAME = NameOidData('2.5.4.3', 'CN', 'commonName', 'Common Name')
+    SURNAME = NameOidData('2.5.4.4', 'SN', 'Surname', 'Surname')
+    SERIAL_NUMBER = NameOidData('2.5.4.5', None, 'serialNumber', 'Serial Number')
+    COUNTRY_NAME = NameOidData('2.5.4.6', 'C', 'countryName', 'Country Name')
+    LOCALITY_NAME = NameOidData('2.5.4.7', 'L', 'localityName', 'Locality Name')
+    STATE_OR_PROVINCE_NAME = NameOidData('2.5.4.8', 'ST', 'stateOrProvinceName', 'State or Province Name')
+    STREET_ADDRESS = NameOidData('2.5.4.9', None, 'streetAddress', 'Street Address')
+    ORGANIZATION_NAME = NameOidData('2.5.4.10', 'O', 'organizationName', 'Organization Name')
+    ORGANIZATIONAL_UNIT_NAME = NameOidData('2.5.4.11', 'OU', 'organizationalUnitName', 'Organizational Unit Name')
+    TITLE = NameOidData('2.5.4.12', 'T', 'title', 'Title')
+    DESCRIPTION = NameOidData('2.5.4.13', None, 'description', 'Description')
+    SEARCH_GUIDE = NameOidData('2.5.4.14', None, 'searchGuide', 'Search Guide')
+    BUSINESS_CATEGORY = NameOidData('2.5.4.15', None, 'businessCategory', 'Business Category')
+    POSTAL_ADDRESS = NameOidData('2.5.4.16', None, 'postalAddress', 'Postal Address')
+    POSTAL_CODE = NameOidData('2.5.4.17', None, 'postalCode', 'Postal Code')
+    POST_OFFICE_BOX = NameOidData('2.5.4.18', None, 'postOfficeBox', 'Post Office Box')
+    PHYSICAL_DELIVERY_OFFICE_NAME = NameOidData(
+        '2.5.4.19', None, 'physicalDeliveryOfficeName', 'Physical Delivery Office Name'
     )
-    SNILS = (
-        '1.2.643.100.3',
-        '',
-        'snils',
-        'Individual Insurance Account Number (SNILS)',
+    TELEPHONE_NUMBER = NameOidData('2.5.4.20', None, 'telephoneNumber', 'Telephone Number')
+    TELEX_NUMBER = NameOidData('2.5.4.21', None, 'telexNumber', 'Telex Number')
+    TELEX_TERMINAL_IDENTIFIER = NameOidData('2.5.4.22', None, 'telexTerminalIdentifier', 'Telex Terminal Identifier')
+    FACSIMILE_TELEPHONE_NUMBER = NameOidData('2.5.4.23', None, 'facsimileTelephoneNumber', 'Facsimile Telephone Number')
+    X121_ADDRESS = NameOidData('2.5.4.24', None, 'x121Address', 'X121 Address')
+    INTERNATIONAL_ISD_NUMBER = NameOidData('2.5.4.25', None, 'internationalISDNumber', 'International ISD Number')
+    REGISTERED_ADDRESS = NameOidData('2.5.4.26', None, 'registeredAddress', 'Registered Address')
+    DESTINATION_INDICATOR = NameOidData('2.5.4.27', None, 'destinationIndicator', 'Destination Indicator')
+    PREFERRED_DELIVERY_METHOD = NameOidData('2.5.4.28', None, 'preferredDeliveryMethod', 'Preferred Delivery Method')
+    PRESENTATION_ADDRESS = NameOidData('2.5.4.29', None, 'presentationAddress', 'Presentation Address')
+    SUPPORTED_APPLICATION_CONTEXT = NameOidData(
+        '2.5.4.30', None, 'supportedApplicationContext', 'Supported Application Context'
     )
-    INNLE = (
-        '1.2.643.100.4',
-        '',
-        'innle',
-        'Individual Taxpayer Number (ITN) of the legal entity',
+    MEMBER = NameOidData('2.5.4.31', None, 'member', 'Member')
+    OWNER = NameOidData('2.5.4.32', None, 'owner', 'Owner')
+    ROLE_OCCUPANT = NameOidData('2.5.4.33', None, 'roleOccupant', 'Role Occupant')
+    SEE_ALSO = NameOidData('2.5.4.34', None, 'seeAlso', 'See Also')
+    USER_PASSWORD = NameOidData('2.5.4.35', None, 'userPassword', 'User Password')
+    USER_CERTIFICATE = NameOidData('2.5.4.36', None, 'userCertificate', 'User Certificate')
+    CA_CERTIFICATE = NameOidData('2.5.4.37', None, 'cACertificate', 'CA Certificate')
+    AUTHORITY_REVOCATION_LIST = NameOidData('2.5.4.38', None, 'authorityRevocationList', 'Authority Revocation List')
+    CERTIFICATE_REVOCATION_LIST = NameOidData(
+        '2.5.4.39', None, 'certificateRevocationList', 'Certificate Revocation List'
     )
-    OGRN_IP = (
-        '1.2.643.100.5',
-        '',
-        'ogrnip',
-        'Main State Registration Number of individual entrepreneurs',
+    CROSS_CERTIFICATE_PAIR = NameOidData('2.5.4.40', None, 'crossCertificatePair', 'Cross Certificate Pair')
+    NAME = NameOidData('2.5.4.41', None, 'name', 'Name')
+    GIVEN_NAME = NameOidData('2.5.4.42', 'GN', 'givenName', 'Given Name')
+    INITIALS = NameOidData('2.5.4.43', None, 'initials', 'Initials')
+    GENERATION_QUALIFIER = NameOidData('2.5.4.44', None, 'generationQualifier', 'Generation Qualifier')
+    X500_UNIQUE_IDENTIFIER = NameOidData('2.5.4.45', None, 'x500UniqueIdentifier', 'X500 Unique Identifier')
+    DN_QUALIFIER = NameOidData('2.5.4.46', None, 'dnQualifier', 'DN Qualifier')
+    ENHANCED_SEARCH_GUIDE = NameOidData('2.5.4.47', None, 'enhancedSearchGuide', 'Enhanced Search Guide')
+    PROTOCOL_INFORMATION = NameOidData('2.5.4.48', None, 'protocolInformation', 'Protocol Information')
+    DISTINGUISHED_NAME = NameOidData('2.5.4.49', None, 'distinguishedName', 'Distinguished Name')
+    UNIQUE_MEMBER = NameOidData('2.5.4.50', None, 'uniqueMember', 'Unique Member')
+    HOUSE_IDENTIFIER = NameOidData('2.5.4.51', None, 'houseIdentifier', 'House Identifier')
+    SUPPORTED_ALGORITHMS = NameOidData('2.5.4.52', None, 'supportedAlgorithms', 'Supported Algorithms')
+    DELTA_REVOCATION_LIST = NameOidData('2.5.4.53', None, 'deltaRevocationList', 'Delta Revocation List')
+    DMD_NAME = NameOidData('2.5.4.54', None, 'dmdName', 'DMD Name')
+    CLEARANCE = NameOidData('2.5.4.55', None, 'clearance', 'Clearance')
+    DEFAULT_DIR_QOP = NameOidData('2.5.4.56', None, 'defaultDirQop', 'Default DIR QOP')
+    ATTRIBUTE_INTEGRITY_INFO = NameOidData('2.5.4.57', None, 'attributeIntegrityInfo', 'Attribute Integrity Info')
+    ATTRIBUTE_CERTIFICATE = NameOidData('2.5.4.58', None, 'attributeCertificate', 'Attribute Certificate')
+    ATTRIBUTE_CERTIFICATE_REVOCATION_LIST = NameOidData(
+        '2.5.4.59', None, 'attributeCertificateRevocationList', 'Attribute Certificate Revocation List'
     )
-    IDENTIFICATION_KIND = (
-        '1.2.643.100.114',
-        '',
-        'identificationKind',
-        'Identification Kind',
+    CONF_KEY_INFO = NameOidData('2.5.4.60', None, 'confKeyInfo', 'Conf Key Info')
+    AA_CERTIFICATE = NameOidData('2.5.4.61', None, 'aACertificate', 'AA Certificate')
+    ATTRIBUTE_DESCRIPTOR_CERTIFICATE = NameOidData(
+        '2.5.4.62', None, 'attributeDescriptorCertificate', 'Attribute Descriptor Certificate'
     )
-    INN = ('1.2.643.3.131.1.1', '', 'inn', 'Individual Taxpayer Number (ITN, INN)')
+    ATTRIBUTE_AUTHORITY_REVOCATION_LIST = NameOidData(
+        '2.5.4.63', None, 'attributeAuthorityRevocationList', 'Attribute Authority Revocation List'
+    )
+    FAMILY_INFORMATION = NameOidData('2.5.4.64', None, 'familyInformation', 'Family Information')
+    PSEUDONYM = NameOidData('2.5.4.65', None, 'pseudonym', 'Pseudonym')
+    COMMUNICATIONS_SERVICE = NameOidData('2.5.4.66', None, 'communicationsService', 'Communications Service')
+    COMMUNICATIONS_NETWORK = NameOidData('2.5.4.67', None, 'communicationsNetwork', 'Communications Network')
+    CERTIFICATION_PRACTICE_STMT = NameOidData(
+        '2.5.4.68', None, 'certificationPracticeStmt', 'Certification Practice Statement'
+    )
+    CERTIFICATE_POLICY = NameOidData('2.5.4.69', None, 'certificatePolicy', 'Certificate Policy')
+    PKI_PATH = NameOidData('2.5.4.70', None, 'pkiPath', 'PKI Path')
+    PRIVILEGE_POLICY = NameOidData('2.5.4.71', None, 'privilegePolicy', 'Privilege Policy')
+    ROLE = NameOidData('2.5.4.72', None, 'role', 'Role')
+    PMI_DELEGATION_PATH = NameOidData('2.5.4.73', None, 'pmiDelegationPath', 'PMI Delegation Path')
+    PROTECTED_PRIVILEGE_POLICY = NameOidData('2.5.4.74', None, 'protectedPrivilegePolicy', 'Protected Privilege Policy')
+    XML_PRIVILEGE_INFO = NameOidData('2.5.4.75', None, 'xMLPrivilegeInfo', 'XML Privilege Info')
+    XML_PRIV_POLICY = NameOidData('2.5.4.76', None, 'xmlPrivPolicy', 'XML Privilege Policy')
+    UUID_PAIR = NameOidData('2.5.4.77', None, 'uuidPair', 'UUID Pair')
+    TAG_OID = NameOidData('2.5.4.78', None, 'tagOid', 'Tag OID')
+    UII_FORMAT = NameOidData('2.5.4.79', None, 'uiiFormat', 'UII Format')
+    UII_IN_URN = NameOidData('2.5.4.80', None, 'uiiInUrn', 'UII in URN')
+    CONTENT_URL = NameOidData('2.5.4.81', None, 'contentUrl', 'Content URL')
+    PERMISSION = NameOidData('2.5.4.82', None, 'permission', 'Permission')
+    URI = NameOidData('2.5.4.83', None, 'uri', 'Uniform Resource Identifier (URI)')
+    PWD_ATTRIBUTE = NameOidData('2.5.4.84', None, 'pwdAttribute', 'Password Attribute')
+    USER_PWD = NameOidData('2.5.4.85', None, 'userPwd', 'User Password')
+    URN = NameOidData('2.5.4.86', None, 'urn', 'Uniform Resource Name (URN)')
+    URL = NameOidData('2.5.4.87', None, 'url', 'Uniform Resource Locator (URL)')
+    UTM_COORDINATES = NameOidData('2.5.4.88', None, 'utmCoordinates', 'UTM Coordinates')
+    URN_C = NameOidData('2.5.4.89', None, 'urnC', 'Uniform Resource Locator Component (urnC)')
+    UII = NameOidData('2.5.4.90', None, 'uii', 'Unique Item Identifier (UII)')
+    EPC = NameOidData('2.5.4.91', None, 'epc', 'Electronic Product Code')
+    TAG_AFI = NameOidData('2.5.4.92', None, 'tagAfi', 'Tag AFI')
+    EPC_FORMAT = NameOidData('2.5.4.93', None, 'epcFormat', 'EPC Format')
+    EPC_IN_URN = NameOidData('2.5.4.94', None, 'epcInUrn', 'EPC in URN')
+    LDAP_URL = NameOidData('2.5.4.95', None, 'ldapUrl', 'LDAP URL')
+    TAG_LOCATION = NameOidData('2.5.4.96', None, 'tagLocation', 'Tag Location')
+    ORGANIZATION_IDENTIFIER = NameOidData('2.5.4.97', None, 'organizationIdentifier', 'Organization Identifier')
+    COUNTRY_CODE_3C = NameOidData('2.5.4.98', None, 'countryCode3c', 'Country Code 3C (ISO 3166-1 alpha-3)')
+    COUNTRY_CODE_3N = NameOidData('2.5.4.99', None, 'countryCode3n', 'Country Code 3N (ISO 3166-1 numeric-3)')
+    DNS_NAME = NameOidData('2.5.4.100', None, 'dnsName', 'DNS Name')
+    EE_PK_CERTIFICATE_REVOCATION_LIST = NameOidData(
+        '2.5.4.101', None, 'eepkCertificateRevocationList', 'End-Entity Public-Key Certificate Revocation List'
+    )
+    EE_ATTR_CERTIFICATE_REVOCATION_LIST = NameOidData(
+        '2.5.4.102', None, 'eeAttrCertificateRevocationList', 'End-Entity Attribute Certificate Revocation List'
+    )
+    SUPPORTED_PUBLIC_KEY_ALGORITHMS = NameOidData(
+        '2.5.4.103', None, 'supportedPublicKeyAlgorithms', 'Supported Public-Key Algorithms'
+    )
+    INT_EMAIL = NameOidData('2.5.4.104', None, 'intEmail', 'Internationalized Email Address')
+    JID = NameOidData('2.5.4.105', None, 'jid', 'Jabber Identifier')
+    OBJECT_IDENTIFIER = NameOidData('2.5.4.106', None, 'objectIdentifier', 'Object Identifier')
+
+    # GOST Algorithms
+    OGRN = NameOidData('1.2.643.100.1', None, 'ogrn', 'Main State Registration Number of Juridical Entities (OGRN)')
+    SNILS = NameOidData('1.2.643.100.3', None, 'snils', 'Individual Insurance Account Number (SNILS)')
+    INNLE = NameOidData('1.2.643.100.4', None, 'innle', 'Individual Taxpayer Number of Legal Entity (ITN)')
+    OGRN_IP = NameOidData(
+        '1.2.643.100.5', None, 'ogrnip', 'Main State Registration Number of Individual Entrepreneurs (OGRN IP)'
+    )
+    IDENTIFICATION_KIND = NameOidData('1.2.643.100.114', None, 'identificationKind', 'Identification Kind')
+    INN = NameOidData('1.2.643.3.131.1.1', None, 'inn', 'Individual Taxpayer Number (ITN, INN)')
 
     # RFC 2985
-    # emailAddress is deprecated, use altName extension
-    EMAIL_ADDRESS = (
-        '1.2.840.113549.1.9.1',
-        'E',
-        'emailAddress',
-        'Email Address (Deprecated)',
-    )
-    UNSTRUCTURED_NAME = (
-        '1.2.840.113549.1.9.2',
-        '',
-        'unstructuredName',
-        'Unstructured Name (FQDN)',
-    )
-    CONTENT_TYPE = ('1.2.840.113549.1.9.3', '', 'contentType', 'Content Type')
-    UNSTRUCTURED_ADDRESS = (
-        '1.2.840.113549.1.9.8',
-        '',
-        'unstructuredAddress',
-        'Unstructured Address',
-    )
+    EMAIL_ADDRESS = NameOidData('1.2.840.113549.1.9.1', 'E', 'emailAddress', 'Email Address (Deprecated)')
+    UNSTRUCTURED_NAME = NameOidData('1.2.840.113549.1.9.2', None, 'unstructuredName', 'Unstructured Name')
+    CONTENT_TYPE = NameOidData('1.2.840.113549.1.9.3', None, 'contentType', 'Content Type')
+    UNSTRUCTURED_ADDRESS = NameOidData('1.2.840.113549.1.9.8', None, 'unstructuredAddress', 'Unstructured Address')
 
     # RFC 3039, RFC 2247, RFC 4519, RFC 5912
-    UID = ('0.9.2342.19200300.100.1.1', 'UID', 'uid', 'User ID (UID)')
-    DOMAIN_COMPONENT = (
-        '0.9.2342.19200300.100.1.25',
-        'DC',
-        'domainComponent',
-        'Domain Component',
-    )
+    UID = NameOidData('0.9.2342.19200300.100.1.1', 'UID', 'uid', 'User ID (UID)')
+    DOMAIN_COMPONENT = NameOidData('0.9.2342.19200300.100.1.25', 'DC', 'domainComponent', 'Domain Component')
 
-    JURISDICTION_OF_INCORPORATION_LOCALITY_NAME = (
+    # Microsoft Jurisdiction of Incorporation
+    JURISDICTION_OF_INCORPORATION_LOCALITY_NAME = NameOidData(
         '1.3.6.1.4.1.311.60.2.1.1',
-        '',
+        None,
         'jurisdictionOfIncorporationLocalityName',
         'Jurisdiction Of Incorporation Locality Name',
     )
-    JURISDICTION_OF_INCORPORATION_STATE_OR_PROVINCE_NAME = (
+    JURISDICTION_OF_INCORPORATION_STATE_OR_PROVINCE_NAME = NameOidData(
         '1.3.6.1.4.1.311.60.2.1.2',
-        '',
+        None,
         'jurisdictionOfIncorporationStateOrProvinceName',
         'Jurisdiction Of Incorporation State Or Province Name',
     )
-    JURISDICTION_OF_INCORPORATION_COUNTRY_NAME = (
+    JURISDICTION_OF_INCORPORATION_COUNTRY_NAME = NameOidData(
         '1.3.6.1.4.1.311.60.2.1.3',
-        '',
+        None,
         'jurisdictionOfIncorporationCountryName',
         'Jurisdiction Of Incorporation Country Name',
     )
 
     # Spain related
-    DNI = ('1.3.6.1.4.1.19126.3', '', 'dni', 'DNI - National identity document (Spain)')
-    NSS = ('1.3.6.1.4.1.19126.4', '', 'nss', 'NSS - Social Security Number (Spain)')
-    CIRCULATION_PERMIT_NUMBER = (
-        '1.3.6.1.4.1.19126.5',
-        '',
-        'circulationPermitNumber',
-        'Circulation Permit Number (SPAIN)',
+    DNI = NameOidData('1.3.6.1.4.1.19126.3', None, 'dni', 'DNI - National identity document (Spain)')
+    NSS = NameOidData('1.3.6.1.4.1.19126.4', None, 'nss', 'NSS - Social Security Number (Spain)')
+    CIRCULATION_PERMIT_NUMBER = NameOidData(
+        '1.3.6.1.4.1.19126.5', None, 'circulationPermitNumber', 'Circulation Permit Number (Spain)'
     )
-    CIF = ('1.3.6.1.4.1.19126.21', '', 'cif', 'CIF - Tax Identification Code (Spain)')
-    NIF = ('2.16.724.4.307', '', 'nif', 'NIF - Number of fiscal identification (Spain)')
+    CIF = NameOidData('1.3.6.1.4.1.19126.21', None, 'cif', 'CIF - Tax Identification Code (Spain)')
+    NIF = NameOidData('2.16.724.4.307', None, 'nif', 'NIF - Fiscal Identification Number (Spain)')
 
-    def __new__(cls, dotted_string: str, abbreviation: str, full_name: str, verbose_name: str) -> Self:
-        """Sets the values for this multi value enum.
+    @property
+    def dotted_string(self) -> str:
+        """Return the dotted string OID.
 
-        Args:
-            dotted_string: The corresponding OID value, also used as the enum value.
-            abbreviation: A common abbreviation for the NameOid. Maybe an emtpy string.
-            full_name: The full name for the NameOid.
-            verbose_name: The verbose name for displaying it to a user.
+        Returns:
+            The dotted string OID.
         """
-        obj = object.__new__(cls)
-        obj._value_ = dotted_string
-        obj.dotted_string = dotted_string
-        obj.abbreviation = abbreviation
-        obj.full_name = full_name
-        obj.verbose_name = verbose_name
-        return obj
+        return self.value.dotted_string
 
-    def __init__(self, _value: str) -> None:
-        """Only for typing, this will not be executed for multivalue enums.
+    @property
+    def abbreviation(self) -> str | None:
+        """Return the abbreviation for the NameOid, if any.
 
-        Args:
-            _value: The main value corresponding to the enum object.
+        Returns:
+            The abbreviation, or None if not defined.
         """
-        del _value
+        return self.value.abbreviation
+
+    @property
+    def full_name(self) -> str:
+        """Return the full name for the NameOid.
+
+        Returns:
+            The full name.
+        """
+        return self.value.full_name
+
+    @property
+    def verbose_name(self) -> str:
+        """Return the verbose name for display.
+
+        Returns:
+            The verbose name.
+        """
+        return self.value.verbose_name
+
+    @classmethod
+    def from_dotted_string(cls, dotted: str) -> Self:
+        """Return enum member matching a dotted_string."""
+        for member in cls:
+            if member.value.dotted_string == dotted:
+                return member
+        err_msg = f'No NameOid with dotted_string={dotted!r}'
+        raise ValueError(err_msg)
+
+    @classmethod
+    def from_abbreviation(cls, abbr: str | None) -> Self:
+        """Return enum member matching an abbreviation. Raises if no or multiple matches."""
+        matches = [member for member in cls if member.value.abbreviation == abbr]
+        if not matches:
+            err_msg = f'No NameOid with abbreviation={abbr!r}'
+            raise ValueError(err_msg)
+        if len(matches) > 1:
+            err_msg = f'Multiple NameOid entries with abbreviation={abbr!r}'
+            raise ValueError(err_msg)
+        return matches[0]
+
+    @classmethod
+    def from_full_name(cls, full: str) -> Self:
+        """Return enum member matching a full_name."""
+        for member in cls:
+            if member.value.full_name == full:
+                return member
+        err_msg = f'No NameOid with full_name={full!r}'
+        raise ValueError(err_msg)
+
+    @classmethod
+    def from_verbose_name(cls, verbose: str) -> Self:
+        """Return enum member matching a verbose_name."""
+        for member in cls:
+            if member.value.verbose_name == verbose:
+                return member
+        err_msg = f'No NameOid with verbose_name={verbose!r}'
+        raise ValueError(err_msg)
 
 
-class CertificateExtensionOid(enum.Enum):
-    """Certificate Extension OID Enum."""
+@dataclass(frozen=True)
+class CertificateExtensionOidData:
+    """The Certificate Extension OID Data class holding all of the information."""
 
     dotted_string: str
     verbose_name: str
 
-    SUBJECT_DIRECTORY_ATTRIBUTES = ('2.5.29.9', 'Subject Directory Attributes')
-    SUBJECT_KEY_IDENTIFIER = ('2.5.29.14', 'Subject Key Identifier')
-    KEY_USAGE = ('2.5.29.15', 'Key Usage')
-    SUBJECT_ALTERNATIVE_NAME = ('2.5.29.17', 'Subject Alternative Name')
-    ISSUER_ALTERNATIVE_NAME = ('2.5.29.18', 'Issuer Alternative Name')
-    BASIC_CONSTRAINTS = ('2.5.29.19', 'Basic Constraints')
-    NAME_CONSTRAINTS = ('2.5.29.30', 'Name Constraints')
-    CRL_DISTRIBUTION_POINTS = ('2.5.29.31', 'Crl Distribution Points')
-    CERTIFICATE_POLICIES = ('2.5.29.32', 'Certificate Policies')
-    POLICY_MAPPINGS = ('2.5.29.33', 'Policy Mappings')
-    AUTHORITY_KEY_IDENTIFIER = ('2.5.29.35', 'Authority Key Identifier')
-    POLICY_CONSTRAINTS = ('2.5.29.36', 'Policy Constraints')
-    EXTENDED_KEY_USAGE = ('2.5.29.37', 'Extended Key Usage')
-    FRESHEST_CRL = ('2.5.29.46', 'Freshest CRL')
-    INHIBIT_ANY_POLICY = ('2.5.29.54', 'Inhibit Any Policy')
-    ISSUING_DISTRIBUTION_POINT = ('2.5.29.28', 'Issuing Distribution Point')
-    AUTHORITY_INFORMATION_ACCESS = ('1.3.6.1.5.5.7.1.1', 'Authority Information Access')
-    SUBJECT_INFORMATION_ACCESS = ('1.3.6.1.5.5.7.1.11', 'Subject Information Access')
-    OCSP_NO_CHECK = ('1.3.6.1.5.5.7.48.1.5', 'OCSP No Check')
-    TLS_FEATURE = ('1.3.6.1.5.5.7.1.24', 'TLS Feature')
-    CRL_NUMBER = ('2.5.29.20', 'CRL Number')
-    DELTA_CRL_INDICATOR = ('2.5.29.27', 'Delta CRL Indicator')
-    PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS = (
+
+class CertificateExtensionOid(enum.Enum):
+    """Certificate Extension OID Enum holding extension metadata as dataclass instances and lookup helpers."""
+
+    SUBJECT_DIRECTORY_ATTRIBUTES = CertificateExtensionOidData('2.5.29.9', 'Subject Directory Attributes')
+    SUBJECT_KEY_IDENTIFIER = CertificateExtensionOidData('2.5.29.14', 'Subject Key Identifier')
+    KEY_USAGE = CertificateExtensionOidData('2.5.29.15', 'Key Usage')
+    SUBJECT_ALTERNATIVE_NAME = CertificateExtensionOidData('2.5.29.17', 'Subject Alternative Name')
+    ISSUER_ALTERNATIVE_NAME = CertificateExtensionOidData('2.5.29.18', 'Issuer Alternative Name')
+    BASIC_CONSTRAINTS = CertificateExtensionOidData('2.5.29.19', 'Basic Constraints')
+    NAME_CONSTRAINTS = CertificateExtensionOidData('2.5.29.30', 'Name Constraints')
+    CRL_DISTRIBUTION_POINTS = CertificateExtensionOidData('2.5.29.31', 'CRL Distribution Points')
+    CERTIFICATE_POLICIES = CertificateExtensionOidData('2.5.29.32', 'Certificate Policies')
+    POLICY_MAPPINGS = CertificateExtensionOidData('2.5.29.33', 'Policy Mappings')
+    AUTHORITY_KEY_IDENTIFIER = CertificateExtensionOidData('2.5.29.35', 'Authority Key Identifier')
+    POLICY_CONSTRAINTS = CertificateExtensionOidData('2.5.29.36', 'Policy Constraints')
+    EXTENDED_KEY_USAGE = CertificateExtensionOidData('2.5.29.37', 'Extended Key Usage')
+    FRESHEST_CRL = CertificateExtensionOidData('2.5.29.46', 'Freshest CRL')
+    INHIBIT_ANY_POLICY = CertificateExtensionOidData('2.5.29.54', 'Inhibit Any Policy')
+    ISSUING_DISTRIBUTION_POINT = CertificateExtensionOidData('2.5.29.28', 'Issuing Distribution Point')
+    AUTHORITY_INFORMATION_ACCESS = CertificateExtensionOidData('1.3.6.1.5.5.7.1.1', 'Authority Information Access')
+    SUBJECT_INFORMATION_ACCESS = CertificateExtensionOidData('1.3.6.1.5.5.7.1.11', 'Subject Information Access')
+    OCSP_NO_CHECK = CertificateExtensionOidData('1.3.6.1.5.5.7.48.1.5', 'OCSP No Check')
+    TLS_FEATURE = CertificateExtensionOidData('1.3.6.1.5.5.7.1.24', 'TLS Feature')
+    CRL_NUMBER = CertificateExtensionOidData('2.5.29.20', 'CRL Number')
+    DELTA_CRL_INDICATOR = CertificateExtensionOidData('2.5.29.27', 'Delta CRL Indicator')
+    PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS = CertificateExtensionOidData(
         '1.3.6.1.4.1.11129.2.4.2',
         'Precert Signed Certificate Timestamps',
     )
-    PRECERT_POISON = ('1.3.6.1.4.1.11129.2.4.3', 'Precert Poison')
-    SIGNED_CERTIFICATE_TIMESTAMPS = (
+    PRECERT_POISON = CertificateExtensionOidData('1.3.6.1.4.1.11129.2.4.3', 'Precert Poison')
+    SIGNED_CERTIFICATE_TIMESTAMPS = CertificateExtensionOidData(
         '1.3.6.1.4.1.11129.2.4.5',
         'Signed Certificate Timestamps',
     )
-    MS_CERTIFICATE_TEMPLATE = ('1.3.6.1.4.1.311.21.7', 'Microsoft Certificate Template')
+    MS_CERTIFICATE_TEMPLATE = CertificateExtensionOidData('1.3.6.1.4.1.311.21.7', 'Microsoft Certificate Template')
 
-    def __new__(cls, dotted_string: str, verbose_name: str) -> Self:
-        """Sets the values for this multi value enum.
+    @property
+    def dotted_string(self) -> str:
+        """Return the dotted string OID.
 
-        Args:
-            dotted_string: The corresponding OID value, also used as the enum value.
-            verbose_name: The verbose name for displaying it to a user.
+        Returns:
+            The dotted string OID.
         """
-        obj = object.__new__(cls)
-        obj._value_ = dotted_string
-        obj.dotted_string = dotted_string
-        obj.verbose_name = verbose_name
-        return obj
+        return self.value.dotted_string
 
-    def __init__(self, _value: str) -> None:
-        """Only for typing, this will not be executed for multivalue enums.
+    @property
+    def verbose_name(self) -> str:
+        """Return the verbose name for display.
 
-        Args:
-            _value: The main value corresponding to the enum object.
+        Returns:
+            The verbose name.
         """
-        del _value
+        return self.value.verbose_name
 
-class NamedCurve(enum.Enum):
-    """Named Curve Enum."""
+    @classmethod
+    def from_dotted_string(cls, dotted: str) -> Self:
+        """Return enum member matching a dotted_string."""
+        for m in cls:
+            if m.value.dotted_string == dotted:
+                return m
+        err_msg = f'No CertificateExtensionOid with dotted_string={dotted!r}'
+        raise ValueError(err_msg)
+
+    @classmethod
+    def from_verbose_name(cls, verbose: str) -> Self:
+        """Return enum member matching a verbose_name."""
+        for m in cls:
+            if m.value.verbose_name == verbose:
+                return m
+        err_msg = f'No CertificateExtensionOid with verbose_name={verbose!r}'
+        raise ValueError(err_msg)
+
+
+@dataclass(frozen=True)
+class NamedCurveData:
+    """The Named Curve Data class holding all of the information."""
 
     dotted_string: str
     verbose_name: str
@@ -507,120 +379,191 @@ class NamedCurve(enum.Enum):
     curve: type[ec.EllipticCurve] | None
     ossl_curve_name: str
 
-    NONE = ('None', 'None', 0, None, '')
-    SECP192R1 = ('1.2.840.10045.3.1.1', 'SECP192R1', 192, ec.SECP192R1, 'prime192v1')
-    SECP224R1 = ('1.3.132.0.33', 'SECP224R1', 224, ec.SECP224R1, 'secp224r1')
-    SECP256K1 = ('1.3.132.0.10', 'SECP256K1', 256, ec.SECP256K1, 'secp256k1')
-    SECP256R1 = ('1.2.840.10045.3.1.7', 'SECP256R1', 256, ec.SECP256R1, 'prime256v1')
-    SECP384R1 = ('1.3.132.0.34', 'SECP384R1', 384, ec.SECP384R1, 'secp384r1')
-    SECP521R1 = ('1.3.132.0.35', 'SECP521R1', 521, ec.SECP521R1, 'secp521r1')
-    BRAINPOOLP256R1 = (
+
+class NamedCurve(enum.Enum):
+    """Named Curve Enum holding curve metadata as dataclass instances and lookup helpers."""
+
+    NONE = NamedCurveData('None', 'None', 0, None, '')
+    SECP192R1 = NamedCurveData('1.2.840.10045.3.1.1', 'SECP192R1', 192, ec.SECP192R1, 'prime192v1')
+    SECP224R1 = NamedCurveData('1.3.132.0.33', 'SECP224R1', 224, ec.SECP224R1, 'secp224r1')
+    SECP256K1 = NamedCurveData('1.3.132.0.10', 'SECP256K1', 256, ec.SECP256K1, 'secp256k1')
+    SECP256R1 = NamedCurveData('1.2.840.10045.3.1.7', 'SECP256R1', 256, ec.SECP256R1, 'prime256v1')
+    SECP384R1 = NamedCurveData('1.3.132.0.34', 'SECP384R1', 384, ec.SECP384R1, 'secp384r1')
+    SECP521R1 = NamedCurveData('1.3.132.0.35', 'SECP521R1', 521, ec.SECP521R1, 'secp521r1')
+    BRAINPOOLP256R1 = NamedCurveData(
         '1.3.36.3.3.2.8.1.1.7',
         'BRAINPOOLP256R1',
         256,
         ec.BrainpoolP256R1,
         'brainpoolP256r1',
     )
-    BRAINPOOLP384R1 = (
+    BRAINPOOLP384R1 = NamedCurveData(
         '1.3.36.3.3.2.8.1.1.11',
         'BRAINPOOLP384R1',
         384,
         ec.BrainpoolP384R1,
         'brainpoolP384r1',
     )
-    BRAINPOOLP512R1 = (
+    BRAINPOOLP512R1 = NamedCurveData(
         '1.3.36.3.3.2.8.1.1.13',
         'BRAINPOOLP512R1',
         512,
         ec.BrainpoolP512R1,
         'brainpoolP512r1',
     )
-    SECT163K1 = ('1.3.132.0.1', 'SECT163K1', 163, ec.SECT163K1, 'sect163r1')
-    SECT163R2 = ('1.3.132.0.15', 'SECT163R2', 163, ec.SECT163R2, 'sect163r2')
-    SECT233K1 = ('1.3.132.0.26', 'SECT233K1', 233, ec.SECT233K1, 'sect233k1')
-    SECT233R1 = ('1.3.132.0.27', 'SECT233R1', 233, ec.SECT233R1, 'sect233r1')
-    SECT283K1 = ('1.3.132.0.16', 'SECT283K1', 283, ec.SECT283K1, 'sect283k1')
-    SECT283R1 = ('1.3.132.0.17', 'SECT283R1', 283, ec.SECT283R1, 'sect283r1')
-    SECT409K1 = ('1.3.132.0.36', 'SECT409K1', 409, ec.SECT409K1, 'sect409k1')
-    SECT409R1 = ('1.3.132.0.37', 'SECT409R1', 409, ec.SECT409R1, 'sect409r1')
-    SECT571K1 = ('1.3.132.0.38', 'SECT571K1', 571, ec.SECT571K1, 'sect571k1')
-    SECT571R1 = ('1.3.132.0.39', 'SECT571R1', 570, ec.SECT571R1, 'sect571r1')
+    SECT163K1 = NamedCurveData('1.3.132.0.1', 'SECT163K1', 163, ec.SECT163K1, 'sect163r1')
+    SECT163R2 = NamedCurveData('1.3.132.0.15', 'SECT163R2', 163, ec.SECT163R2, 'sect163r2')
+    SECT233K1 = NamedCurveData('1.3.132.0.26', 'SECT233K1', 233, ec.SECT233K1, 'sect233k1')
+    SECT233R1 = NamedCurveData('1.3.132.0.27', 'SECT233R1', 233, ec.SECT233R1, 'sect233r1')
+    SECT283K1 = NamedCurveData('1.3.132.0.16', 'SECT283K1', 283, ec.SECT283K1, 'sect283k1')
+    SECT283R1 = NamedCurveData('1.3.132.0.17', 'SECT283R1', 283, ec.SECT283R1, 'sect283r1')
+    SECT409K1 = NamedCurveData('1.3.132.0.36', 'SECT409K1', 409, ec.SECT409K1, 'sect409k1')
+    SECT409R1 = NamedCurveData('1.3.132.0.37', 'SECT409R1', 409, ec.SECT409R1, 'sect409r1')
+    SECT571K1 = NamedCurveData('1.3.132.0.38', 'SECT571K1', 571, ec.SECT571K1, 'sect571k1')
+    SECT571R1 = NamedCurveData('1.3.132.0.39', 'SECT571R1', 571, ec.SECT571R1, 'sect571r1')
 
-    def __new__(
-        cls,
-        dotted_string: str,
-        verbose_name: str,
-        key_size: int,
-        curve: type[ec.EllipticCurve] | None,
-        ossl_curve_name: str,
-    ) -> Self:
-        """Sets the values for this multi value enum.
+    @property
+    def dotted_string(self) -> str:
+        """Return the dotted string OID.
 
-        Args:
-            dotted_string: The corresponding OID value, also used as the enum value.
-            verbose_name: The verbose name for displaying it to a user.
-            key_size: The key size of the corresponding named curve.
-            curve: The corresponding python cryptography curve class.
-            ossl_curve_name: The
+        Returns:
+            The dotted string OID.
         """
-        obj = object.__new__(cls)
-        obj._value_ = dotted_string
-        obj.dotted_string = dotted_string
-        obj.verbose_name = verbose_name
-        obj.key_size = key_size
-        obj.curve = curve
-        obj.ossl_curve_name = ossl_curve_name
-        return obj
+        return self.value.dotted_string
 
-    def __init__(self, _value: str) -> None:
-        """Only for typing, this will not be executed for multivalue enums.
+    @property
+    def verbose_name(self) -> str:
+        """Return the verbose name for display.
 
-        Args:
-            _value: The main value corresponding to the enum object.
+        Returns:
+            The verbose name.
         """
-        del _value
+        return self.value.verbose_name
+
+    @property
+    def key_size(self) -> int:
+        """Return the key size of the curve.
+
+        Returns:
+            The key size in bits.
+        """
+        return self.value.key_size
+
+    @property
+    def curve(self) -> type[ec.EllipticCurve] | None:
+        """Return the Python cryptography EllipticCurve class.
+
+        Returns:
+            The curve class, or None.
+        """
+        return self.value.curve
+
+    @property
+    def ossl_curve_name(self) -> str:
+        """Return the OpenSSL curve name.
+
+        Returns:
+            The OpenSSL curve name string.
+        """
+        return self.value.ossl_curve_name
+
+    @classmethod
+    def from_dotted_string(cls, dotted: str) -> Self:
+        """Return enum member matching a dotted_string."""
+        for m in cls:
+            if m.value.dotted_string == dotted:
+                return m
+        err_msg = f'No NamedCurve with dotted_string={dotted!r}'
+        raise ValueError(err_msg)
+
+    @classmethod
+    def from_verbose_name(cls, verbose: str) -> Self:
+        """Return enum member matching a verbose_name."""
+        for m in cls:
+            if m.value.verbose_name == verbose:
+                return m
+        err_msg = f'No NamedCurve with verbose_name={verbose!r}'
+        raise ValueError(err_msg)
+
+    @classmethod
+    def from_curve(cls, curve: type[ec.EllipticCurve] | None) -> Self:
+        """Return enum member matching a cryptography curve class."""
+        matches = [m for m in cls if m.value.curve is curve]
+        if not matches:
+            err_msg = f'No NamedCurve with curve={curve!r}'
+            raise ValueError(err_msg)
+        if len(matches) > 1:
+            err_msg = f'Multiple NamedCurve entries with curve={curve!r}'
+            raise ValueError(err_msg)
+        return matches[0]
+
+    @classmethod
+    def from_ossl_curve_name(cls, name: str) -> Self:
+        """Return enum member matching an OpenSSL curve name."""
+        for m in cls:
+            if m.value.ossl_curve_name == name:
+                return m
+        err_msg = f'No NamedCurve with ossl_curve_name={name!r}'
+        raise ValueError(err_msg)
 
 
 class RsaPaddingScheme(enum.Enum):
     """RSA Padding Scheme Enum."""
 
-    NONE = 'None'
     PKCS1v15 = 'PKCS#1 v1.5'
     PSS = 'PSS'
 
 
+@dataclass(frozen=True)
+class PublicKeyAlgorithmOidData:
+    """The Public Key Algorithm OID Data class holding all of the information."""
+
+    dotted_string: str | None
+    verbose_name: str | None
+
+
 class PublicKeyAlgorithmOid(enum.Enum):
-    """Public Key Algorithm Enum."""
+    """Public Key Algorithm Enum holding algorithm OID metadata and lookup helpers."""
 
-    dotted_string: str
-    verbose_name: str
+    NONE = PublicKeyAlgorithmOidData(None, None)
+    ECC = PublicKeyAlgorithmOidData('1.2.840.10045.2.1', 'ECC')
+    RSA = PublicKeyAlgorithmOidData('1.2.840.113549.1.1.1', 'RSA')
 
-    NONE = ('NONE', 'None')
-    ECC = ('1.2.840.10045.2.1', 'ECC')
-    RSA = ('1.2.840.113549.1.1.1', 'RSA')
+    @property
+    def dotted_string(self) -> str | None:
+        """Return the dotted string OID.
 
-    # TODO(AlexHx8472): Support ED25519, ED448  # noqa: FIX002, TD003
-
-    def __new__(cls, dotted_string: str, verbose_name: str) -> Self:
-        """Sets the values for this multi value enum.
-
-        Args:
-            dotted_string: The corresponding OID value, also used as the enum value.
-            verbose_name: The verbose name for displaying it to a user.
+        Returns:
+            The dotted string OID, or None.
         """
-        obj = object.__new__(cls)
-        obj._value_ = dotted_string
-        obj.dotted_string = dotted_string
-        obj.verbose_name = verbose_name
-        return obj
+        return self.value.dotted_string
 
-    def __init__(self, _value: str) -> None:
-        """Only for typing, this will not be executed for multivalue enums.
+    @property
+    def verbose_name(self) -> str | None:
+        """Return the verbose name for display.
 
-        Args:
-            _value: The main value corresponding to the enum object.
+        Returns:
+            The verbose name, or None.
         """
-        del _value
+        return self.value.verbose_name
+
+    @classmethod
+    def from_dotted_string(cls, dotted_string: str | None) -> Self:
+        """Return enum member matching a dotted_string."""
+        for m in cls:
+            if m.value.dotted_string == dotted_string:
+                return m
+        err_msg = f'No PublicKeyAlgorithmOid with dotted_string={dotted_string!r}'
+        raise ValueError(err_msg)
+
+    @classmethod
+    def from_verbose_name(cls, verbose_name: str | None) -> Self:
+        """Return enum member matching a verbose_name."""
+        for m in cls:
+            if m.value.verbose_name == verbose_name:
+                return m
+        err_msg = f'No PublicKeyAlgorithmOid with verbose_name={verbose_name!r}'
+        raise ValueError(err_msg)
 
     @classmethod
     def from_certificate(cls, certificate: x509.Certificate) -> PublicKeyAlgorithmOid:
@@ -672,141 +615,184 @@ class PublicKeyAlgorithmOid(enum.Enum):
         raise TypeError(err_msg)
 
 
-class HashAlgorithm(enum.Enum):
-    """Hash Algorithm Enum."""
+@dataclass(frozen=True)
+class HashAlgorithmData:
+    """The Hash Algorithm OID Data class holding all of the information."""
 
     dotted_string: str
     verbose_name: str
-    hash_algorithm: type[hashes.HashAlgorithm] | None
+    hash_algorithm: type[hashes.HashAlgorithm]
 
-    MD5 = ('1.2.840.113549.2.5', 'MD5', hashes.MD5)
 
-    SHA1 = ('1.3.14.3.2.26', 'SHA1', hashes.SHA1)
+class HashAlgorithm(enum.Enum):
+    """Hash Algorithm Enum holding OID metadata and lookup helpers."""
 
-    SHA224 = ('2.16.840.1.101.3.4.2.4', 'SHA224', hashes.SHA224)
-    SHA256 = ('2.16.840.1.101.3.4.2.1', 'SHA256', hashes.SHA256)
-    SHA384 = ('2.16.840.1.101.3.4.2.2', 'SHA384', hashes.SHA384)
-    SHA512 = ('2.16.840.1.101.3.4.2.3', 'SHA512', hashes.SHA512)
+    MD5 = HashAlgorithmData('1.2.840.113549.2.5', 'MD5', hashes.MD5)
+    SHA1 = HashAlgorithmData('1.3.14.3.2.26', 'SHA1', hashes.SHA1)
+    SHA224 = HashAlgorithmData('2.16.840.1.101.3.4.2.4', 'SHA224', hashes.SHA224)
+    SHA256 = HashAlgorithmData('2.16.840.1.101.3.4.2.1', 'SHA256', hashes.SHA256)
+    SHA384 = HashAlgorithmData('2.16.840.1.101.3.4.2.2', 'SHA384', hashes.SHA384)
+    SHA512 = HashAlgorithmData('2.16.840.1.101.3.4.2.3', 'SHA512', hashes.SHA512)
 
     # SHA-3 family
-    SHA3_224 = ('2.16.840.1.101.3.4.2.7', 'SHA3-224', hashes.SHA3_224)
-    SHA3_256 = ('2.16.840.1.101.3.4.2.8', 'SHA3-256', hashes.SHA3_256)
-    SHA3_384 = ('2.16.840.1.101.3.4.2.9', 'SHA3-384', hashes.SHA3_384)
-    SHA3_512 = ('2.16.840.1.101.3.4.2.10', 'SHA3-512', hashes.SHA3_512)
+    SHA3_224 = HashAlgorithmData('2.16.840.1.101.3.4.2.7', 'SHA3-224', hashes.SHA3_224)
+    SHA3_256 = HashAlgorithmData('2.16.840.1.101.3.4.2.8', 'SHA3-256', hashes.SHA3_256)
+    SHA3_384 = HashAlgorithmData('2.16.840.1.101.3.4.2.9', 'SHA3-384', hashes.SHA3_384)
+    SHA3_512 = HashAlgorithmData('2.16.840.1.101.3.4.2.10', 'SHA3-512', hashes.SHA3_512)
 
     # SHAKE algorithms
-    SHAKE128 = ('2.16.840.1.101.3.4.2.11', 'Shake-128', hashes.SHAKE128)
-    SHAKE256 = ('2.16.840.1.101.3.4.2.12', 'Shake-256', hashes.SHAKE256)
+    SHAKE128 = HashAlgorithmData('2.16.840.1.101.3.4.2.11', 'Shake-128', hashes.SHAKE128)
+    SHAKE256 = HashAlgorithmData('2.16.840.1.101.3.4.2.12', 'Shake-256', hashes.SHAKE256)
 
-    def __new__(
-        cls,
-        dotted_string: str,
-        verbose_name: str,
-        hash_algorithm: type[hashes.HashAlgorithm],
-    ) -> Self:
-        """Sets the values for this multi value enum.
+    @property
+    def dotted_string(self) -> str:
+        """Return the dotted string OID.
 
-        Args:
-            dotted_string: The corresponding OID value, also used as the enum value.
-            verbose_name: The verbose name for displaying it to a user.
-            hash_algorithm: The corresponding (cryptography) hashes.HashAlgorithm class.
+        Returns:
+            The dotted string OID.
         """
-        obj = object.__new__(cls)
-        obj._value_ = dotted_string
-        obj.dotted_string = dotted_string
-        obj.verbose_name = verbose_name
-        obj.hash_algorithm = hash_algorithm
-        return obj
+        return self.value.dotted_string
 
-    def __init__(self, _value: str) -> None:
-        """Only for typing, this will not be executed for multivalue enums.
+    @property
+    def verbose_name(self) -> str:
+        """Return the verbose name for display.
 
-        Args:
-            _value: The main value corresponding to the enum object.
+        Returns:
+            The verbose name.
         """
-        del _value
+        return self.value.verbose_name
+
+    @property
+    def hash_algorithm(self) -> type[hashes.HashAlgorithm]:
+        """Return the cryptography HashAlgorithm class.
+
+        Returns:
+            The HashAlgorithm class.
+        """
+        return self.value.hash_algorithm
+
+    @classmethod
+    def from_dotted_string(cls, dotted: str) -> Self:
+        """Return enum member matching a dotted_string."""
+        for m in cls:
+            if m.value.dotted_string == dotted:
+                return m
+        err_msg = f'No HashAlgorithm with dotted_string={dotted!r}'
+        raise ValueError(err_msg)
+
+    @classmethod
+    def from_verbose_name(cls, verbose: str) -> Self:
+        """Return enum member matching a verbose_name."""
+        for m in cls:
+            if m.value.verbose_name == verbose:
+                return m
+        err_msg = f'No HashAlgorithm with verbose_name={verbose!r}'
+        raise ValueError(err_msg)
+
+    @classmethod
+    def from_hash_algorithm_type(cls, algo_type: type[hashes.HashAlgorithm]) -> Self:
+        """Return enum member matching a hashes.HashAlgorithm class."""
+        for m in cls:
+            if m.value.hash_algorithm is algo_type:
+                return m
+        err_msg = f'No HashAlgorithm with hash_algorithm={algo_type!r}'
+        raise ValueError(err_msg)
+
+    @classmethod
+    def from_hash_algorithm(cls, algo: hashes.HashAlgorithm) -> Self:
+        """Return enum member matching a hashes.HashAlgorithm instance."""
+        for m in cls:
+            if isinstance(algo, m.value.hash_algorithm):
+                return m
+        err_msg = f'No HashAlgorithm with hash_algorithm={algo!r}'
+        raise ValueError(err_msg)
 
 
-class AlgorithmIdentifier(enum.Enum):
-    """Algorithm Identifier Enum."""
+@dataclass(frozen=True)
+class AlgorithmIdentifierData:
+    """The Algorithm Identifer Data class holding all of the information."""
 
     dotted_string: str
     verbose_name: str
     public_key_algo_oid: PublicKeyAlgorithmOid
-    padding_scheme: RsaPaddingScheme
+    padding_scheme: RsaPaddingScheme | None
     hash_algorithm: HashAlgorithm | None
 
-    RSA_MD5 = (
+
+class AlgorithmIdentifier(enum.Enum):
+    """Algorithm Identifier Enum holding combined algorithm metadata and lookup helpers."""
+
+    RSA_MD5 = AlgorithmIdentifierData(
         '1.2.840.113549.1.1.4',
         'RSA with MD5',
         PublicKeyAlgorithmOid.RSA,
         RsaPaddingScheme.PKCS1v15,
         HashAlgorithm.MD5,
     )
-    RSA_SHA1 = (
+    RSA_SHA1 = AlgorithmIdentifierData(
         '1.2.840.113549.1.1.5',
         'RSA with SHA1',
         PublicKeyAlgorithmOid.RSA,
         RsaPaddingScheme.PKCS1v15,
         HashAlgorithm.SHA1,
     )
-    RSA_SHA1_ALT = (
+    RSA_SHA1_ALT = AlgorithmIdentifierData(
         '1.3.14.3.2.29',
         'RSA with SHA1',
         PublicKeyAlgorithmOid.RSA,
         RsaPaddingScheme.PKCS1v15,
         HashAlgorithm.SHA1,
     )
-    RSA_SHA224 = (
-        '1.3.14.3.2.29',
+    RSA_SHA224 = AlgorithmIdentifierData(
+        '1.2.840.113549.1.1.14',
         'RSA with SHA224',
         PublicKeyAlgorithmOid.RSA,
         RsaPaddingScheme.PKCS1v15,
         HashAlgorithm.SHA224,
     )
-    RSA_SHA256 = (
+    RSA_SHA256 = AlgorithmIdentifierData(
         '1.2.840.113549.1.1.11',
         'RSA with SHA256',
         PublicKeyAlgorithmOid.RSA,
         RsaPaddingScheme.PKCS1v15,
         HashAlgorithm.SHA256,
     )
-    RSA_SHA384 = (
+    RSA_SHA384 = AlgorithmIdentifierData(
         '1.2.840.113549.1.1.12',
         'RSA with SHA384',
         PublicKeyAlgorithmOid.RSA,
         RsaPaddingScheme.PKCS1v15,
         HashAlgorithm.SHA384,
     )
-    RSA_SHA512 = (
+    RSA_SHA512 = AlgorithmIdentifierData(
         '1.2.840.113549.1.1.13',
         'RSA with SHA512',
         PublicKeyAlgorithmOid.RSA,
         RsaPaddingScheme.PKCS1v15,
         HashAlgorithm.SHA512,
     )
-    RSA_SHA3_224 = (
+    RSA_SHA3_224 = AlgorithmIdentifierData(
         '2.16.840.1.101.3.4.3.13',
         'RSA with SHA3-224',
         PublicKeyAlgorithmOid.RSA,
         RsaPaddingScheme.PKCS1v15,
         HashAlgorithm.SHA3_224,
     )
-    RSA_SHA3_256 = (
+    RSA_SHA3_256 = AlgorithmIdentifierData(
         '2.16.840.1.101.3.4.3.14',
         'RSA with SHA3-256',
         PublicKeyAlgorithmOid.RSA,
         RsaPaddingScheme.PKCS1v15,
         HashAlgorithm.SHA3_256,
     )
-    RSA_SHA3_384 = (
+    RSA_SHA3_384 = AlgorithmIdentifierData(
         '2.16.840.1.101.3.4.3.15',
         'RSA with SHA3-384',
         PublicKeyAlgorithmOid.RSA,
         RsaPaddingScheme.PKCS1v15,
         HashAlgorithm.SHA3_384,
     )
-    RSA_SHA3_512 = (
+    RSA_SHA3_512 = AlgorithmIdentifierData(
         '2.16.840.1.101.3.4.3.16',
         'RSA with SHA3-512',
         PublicKeyAlgorithmOid.RSA,
@@ -814,112 +800,141 @@ class AlgorithmIdentifier(enum.Enum):
         HashAlgorithm.SHA3_512,
     )
 
-    # TODO(AlexHx8472): Add RSA PSS support.    # noqa: FIX002, TD003
+    # TODO(AlexHx8472): Add RSA PSS support. # noqa: FIX002, TD003
 
-    ECDSA_SHA1 = (
+    ECDSA_SHA1 = AlgorithmIdentifierData(
         '1.2.840.10045.4.1',
         'ECDSA with SHA1',
         PublicKeyAlgorithmOid.ECC,
-        RsaPaddingScheme.NONE,
+        None,
         HashAlgorithm.SHA1,
     )
-    ECDSA_SHA224 = (
+    ECDSA_SHA224 = AlgorithmIdentifierData(
         '1.2.840.10045.4.3.1',
         'ECDSA with SHA224',
         PublicKeyAlgorithmOid.ECC,
-        RsaPaddingScheme.NONE,
+        None,
         HashAlgorithm.SHA224,
     )
-    ECDSA_SHA256 = (
+    ECDSA_SHA256 = AlgorithmIdentifierData(
         '1.2.840.10045.4.3.2',
         'ECDSA with SHA256',
         PublicKeyAlgorithmOid.ECC,
-        RsaPaddingScheme.NONE,
+        None,
         HashAlgorithm.SHA256,
     )
-    ECDSA_SHA384 = (
+    ECDSA_SHA384 = AlgorithmIdentifierData(
         '1.2.840.10045.4.3.3',
         'ECDSA with SHA384',
         PublicKeyAlgorithmOid.ECC,
-        RsaPaddingScheme.NONE,
+        None,
         HashAlgorithm.SHA384,
     )
-    ECDSA_SHA512 = (
+    ECDSA_SHA512 = AlgorithmIdentifierData(
         '1.2.840.10045.4.3.4',
         'ECDSA with SHA512',
         PublicKeyAlgorithmOid.ECC,
-        RsaPaddingScheme.NONE,
+        None,
         HashAlgorithm.SHA512,
     )
-    ECDSA_SHA3_224 = (
+    ECDSA_SHA3_224 = AlgorithmIdentifierData(
         '2.16.840.1.101.3.4.3.9',
         'ECDSA with SHA3-224',
         PublicKeyAlgorithmOid.ECC,
-        RsaPaddingScheme.NONE,
+        None,
         HashAlgorithm.SHA3_224,
     )
-    ECDSA_SHA3_256 = (
+    ECDSA_SHA3_256 = AlgorithmIdentifierData(
         '2.16.840.1.101.3.4.3.10',
         'ECDSA with SHA3-256',
         PublicKeyAlgorithmOid.ECC,
-        RsaPaddingScheme.NONE,
+        None,
         HashAlgorithm.SHA3_256,
     )
-    ECDSA_SHA3_384 = (
+    ECDSA_SHA3_384 = AlgorithmIdentifierData(
         '2.16.840.1.101.3.4.3.11',
         'ECDSA with SHA3-384',
         PublicKeyAlgorithmOid.ECC,
-        RsaPaddingScheme.NONE,
+        None,
         HashAlgorithm.SHA3_384,
     )
-    ECDSA_SHA3_512 = (
+    ECDSA_SHA3_512 = AlgorithmIdentifierData(
         '2.16.840.1.101.3.4.3.12',
         'ECDSA with SHA3-512',
         PublicKeyAlgorithmOid.ECC,
-        RsaPaddingScheme.NONE,
+        None,
         HashAlgorithm.SHA3_512,
     )
-    PASSWORD_BASED_MAC = (
+    PASSWORD_BASED_MAC = AlgorithmIdentifierData(
         '1.2.840.113533.7.66.13',
         'Password Based MAC',
         PublicKeyAlgorithmOid.NONE,
-        RsaPaddingScheme.NONE,
+        None,
         None,
     )
 
-    def __new__(
-        cls,
-        dotted_string: str,
-        verbose_name: str,
-        public_key_algo_oid: PublicKeyAlgorithmOid,
-        padding_scheme: RsaPaddingScheme,
-        hash_algorithm: HashAlgorithm | None,
-    ) -> Self:
-        """Sets the values for this multi value enum.
+    @property
+    def dotted_string(self) -> str:
+        """Return the dotted string OID.
 
-        Args:
-            dotted_string: The corresponding OID value, also used as the enum value.
-            verbose_name: The verbose name for displaying it to a user.
-            public_key_algo_oid: The corresponding PublicKeyAlgorithmOid enum.
-            padding_scheme: The corresponding RsaPaddingScheme enum.
-            hash_algorithm: The corresponding python cryptography hash algorithm class.
+        Returns:
+            The dotted string OID.
         """
-        obj = object.__new__(cls)
-        obj._value_ = dotted_string
-        obj.dotted_string = dotted_string
-        obj.verbose_name = verbose_name
-        obj.public_key_algo_oid = public_key_algo_oid
-        obj.padding_scheme = padding_scheme
-        obj.hash_algorithm = hash_algorithm
-        return obj
+        return self.value.dotted_string
 
-    def __init__(self, _value: str) -> None:
-        """Only for typing, this will not be executed for multivalue enums.
+    @property
+    def verbose_name(self) -> str:
+        """Return the verbose name for display.
 
-        Args:
-            _value: The main value corresponding to the enum object.
+        Returns:
+            The verbose name.
         """
-        del _value
+        return self.value.verbose_name
+
+    @property
+    def public_key_algo_oid(self) -> PublicKeyAlgorithmOid:
+        """Return the public key algorithm OID enum member.
+
+        Returns:
+            The PublicKeyAlgorithmOid member.
+        """
+        return self.value.public_key_algo_oid
+
+    @property
+    def padding_scheme(self) -> RsaPaddingScheme | None:
+        """Return the RSA padding scheme.
+
+        Returns:
+            The RsaPaddingScheme member, or None.
+        """
+        return self.value.padding_scheme
+
+    @property
+    def hash_algorithm(self) -> HashAlgorithm | None:
+        """Return the hash algorithm enum member.
+
+        Returns:
+            The HashAlgorithm member, or None.
+        """
+        return self.value.hash_algorithm
+
+    @classmethod
+    def from_dotted_string(cls, dotted: str) -> Self:
+        """Return enum member matching a dotted_string."""
+        for m in cls:
+            if m.value.dotted_string == dotted:
+                return m
+        err_msg = f'No AlgorithmIdentifier with dotted_string={dotted!r}'
+        raise ValueError(err_msg)
+
+    @classmethod
+    def from_verbose_name(cls, verbose: str) -> Self:
+        """Return enum member matching a verbose_name."""
+        for m in cls:
+            if m.value.verbose_name == verbose:
+                return m
+        err_msg = f'No AlgorithmIdentifier with verbose_name={verbose!r}'
+        raise ValueError(err_msg)
 
     @classmethod
     def from_certificate(cls, certificate: x509.Certificate) -> AlgorithmIdentifier:
@@ -938,48 +953,64 @@ class AlgorithmIdentifier(enum.Enum):
         raise ValueError(err_msg)
 
 
-class HmacAlgorithm(enum.Enum):
-    """HMAC Algorithm Enum."""
+@dataclass(frozen=True)
+class HmacAlgorithmData:
+    """The HMAC Algorithm Data class holding all of the information."""
 
     dotted_string: str
     hash_algorithm: HashAlgorithm
 
-    HMAC_MD5 = ('1.3.6.1.5.5.8.1.1', HashAlgorithm.MD5)
 
-    HMAC_SHA1 = ('1.3.6.1.5.5.8.1.2', HashAlgorithm.SHA1)
+class HmacAlgorithm(enum.Enum):
+    """HMAC Algorithm Enum holding combined OID and hash algorithm metadata."""
 
-    HMAC_SHA224 = ('1.3.6.1.5.5.8.1.4', HashAlgorithm.SHA224)
-    HMAC_SHA256 = ('1.3.6.1.5.5.8.1.5', HashAlgorithm.SHA256)
-    HMAC_SHA384 = ('1.3.6.1.5.5.8.1.6', HashAlgorithm.SHA384)
-    HMAC_SHA512 = ('1.3.6.1.5.5.8.1.7', HashAlgorithm.SHA512)
+    HMAC_MD5 = HmacAlgorithmData('1.3.6.1.5.5.8.1.1', HashAlgorithm.MD5)
+    HMAC_SHA1 = HmacAlgorithmData('1.3.6.1.5.5.8.1.2', HashAlgorithm.SHA1)
+    HMAC_SHA224 = HmacAlgorithmData('1.3.6.1.5.5.8.1.4', HashAlgorithm.SHA224)
+    HMAC_SHA256 = HmacAlgorithmData('1.3.6.1.5.5.8.1.5', HashAlgorithm.SHA256)
+    HMAC_SHA384 = HmacAlgorithmData('1.3.6.1.5.5.8.1.6', HashAlgorithm.SHA384)
+    HMAC_SHA512 = HmacAlgorithmData('1.3.6.1.5.5.8.1.7', HashAlgorithm.SHA512)
 
-    HMAC_SHA3_224 = ('2.16.840.1.101.3.4.2.13', HashAlgorithm.SHA3_224)
-    HMAC_SHA3_256 = ('2.16.840.1.101.3.4.2.14', HashAlgorithm.SHA3_256)
-    HMAC_SHA3_384 = ('2.16.840.1.101.3.4.2.15', HashAlgorithm.SHA3_384)
-    HMAC_SHA3_512 = ('2.16.840.1.101.3.4.2.16', HashAlgorithm.SHA3_512)
+    HMAC_SHA3_224 = HmacAlgorithmData('2.16.840.1.101.3.4.2.13', HashAlgorithm.SHA3_224)
+    HMAC_SHA3_256 = HmacAlgorithmData('2.16.840.1.101.3.4.2.14', HashAlgorithm.SHA3_256)
+    HMAC_SHA3_384 = HmacAlgorithmData('2.16.840.1.101.3.4.2.15', HashAlgorithm.SHA3_384)
+    HMAC_SHA3_512 = HmacAlgorithmData('2.16.840.1.101.3.4.2.16', HashAlgorithm.SHA3_512)
 
-    # No HMAC with SHAKE
+    @property
+    def dotted_string(self) -> str:
+        """Return the dotted string OID.
 
-    def __new__(cls, dotted_string: str, hash_algorithm: HashAlgorithm) -> Self:
-        """Sets the values for this multi value enum.
-
-        Args:
-            dotted_string: The corresponding OID value, also used as the enum value.
-            hash_algorithm: The corresponding HashAlgorithm.
+        Returns:
+            The dotted string OID.
         """
-        obj = object.__new__(cls)
-        obj._value_ = dotted_string
-        obj.dotted_string = dotted_string
-        obj.hash_algorithm = hash_algorithm
-        return obj
+        return self.value.dotted_string
 
-    def __init__(self, _value: str) -> None:
-        """Only for typing, this will not be executed for multivalue enums.
+    @property
+    def hash_algorithm(self) -> HashAlgorithm:
+        """Return the HashAlgorithm enum member.
 
-        Args:
-            _value: The main value corresponding to the enum object.
+        Returns:
+            The HashAlgorithm member.
         """
-        del _value
+        return self.value.hash_algorithm
+
+    @classmethod
+    def from_dotted_string(cls, dotted: str) -> Self:
+        """Return enum member matching a dotted_string."""
+        for m in cls:
+            if m.value.dotted_string == dotted:
+                return m
+        err_msg = f'No HmacAlgorithm with dotted_string={dotted!r}'
+        raise ValueError(err_msg)
+
+    @classmethod
+    def from_hash_algorithm(cls, algo: HashAlgorithm) -> Self:
+        """Return enum member matching a HashAlgorithm."""
+        for m in cls:
+            if m.value.hash_algorithm is algo:
+                return m
+        err_msg = f'No HmacAlgorithm with hash_algorithm={algo!r}'
+        raise ValueError(err_msg)
 
 
 class PublicKeyInfo:
