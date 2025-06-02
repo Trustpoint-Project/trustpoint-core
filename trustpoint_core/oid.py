@@ -518,8 +518,8 @@ class RsaPaddingScheme(enum.Enum):
 class PublicKeyAlgorithmOidData:
     """The Public Key Algorithm OID Data class holding all of the information."""
 
-    dotted_string: str | None
-    verbose_name: str | None
+    dotted_string: str
+    verbose_name: str
 
 
 class PublicKeyAlgorithmOid(enum.Enum):
