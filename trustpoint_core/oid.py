@@ -713,7 +713,7 @@ class AlgorithmIdentifierData:
 
     dotted_string: str
     verbose_name: str
-    public_key_algo_oid: PublicKeyAlgorithmOid
+    public_key_algo_oid: PublicKeyAlgorithmOid | None
     padding_scheme: RsaPaddingScheme | None
     hash_algorithm: HashAlgorithm | None
 
@@ -867,7 +867,7 @@ class AlgorithmIdentifier(enum.Enum):
     PASSWORD_BASED_MAC = AlgorithmIdentifierData(
         '1.2.840.113533.7.66.13',
         'Password Based MAC',
-        PublicKeyAlgorithmOid.NONE,
+        None,
         None,
         None,
     )
@@ -891,7 +891,7 @@ class AlgorithmIdentifier(enum.Enum):
         return self.value.verbose_name
 
     @property
-    def public_key_algo_oid(self) -> PublicKeyAlgorithmOid:
+    def public_key_algo_oid(self) -> PublicKeyAlgorithmOid | None:
         """Return the public key algorithm OID enum member.
 
         Returns:
@@ -1234,8 +1234,13 @@ class SignatureSuite:
             ValueError: If the consistency check failed.
         """
         if self.algorithm_identifier.public_key_algo_oid != self.public_key_info.public_key_algorithm_oid:
+            name = (
+                self.algorithm_identifier.public_key_algo_oid.name
+                if self.algorithm_identifier.public_key_algo_oid
+                else 'None'
+            )
             err_msg = (
-                f'Signature algorithm uses {self.algorithm_identifier.public_key_algo_oid.name}, '
+                f'Signature algorithm uses {name}, '
                 f'but the public key is a {self.public_key_info.public_key_algorithm_oid.name} key.'
             )
             raise ValueError(err_msg)
