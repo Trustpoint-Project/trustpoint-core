@@ -383,7 +383,7 @@ class NamedCurveData:
 class NamedCurve(enum.Enum):
     """Named Curve Enum holding curve metadata as dataclass instances and lookup helpers."""
 
-    NONE = NamedCurveData('None', 'None', 0, None, '')
+    NONE = NamedCurveData('', '', 0, None, '')
     SECP192R1 = NamedCurveData('1.2.840.10045.3.1.1', 'SECP192R1', 192, ec.SECP192R1, 'prime192v1')
     SECP224R1 = NamedCurveData('1.3.132.0.33', 'SECP224R1', 224, ec.SECP224R1, 'secp224r1')
     SECP256K1 = NamedCurveData('1.3.132.0.10', 'SECP256K1', 256, ec.SECP256K1, 'secp256k1')
@@ -525,7 +525,6 @@ class PublicKeyAlgorithmOidData:
 class PublicKeyAlgorithmOid(enum.Enum):
     """Public Key Algorithm Enum holding algorithm OID metadata and lookup helpers."""
 
-    NONE = PublicKeyAlgorithmOidData(None, None)
     ECC = PublicKeyAlgorithmOidData('1.2.840.10045.2.1', 'ECC')
     RSA = PublicKeyAlgorithmOidData('1.2.840.113549.1.1.1', 'RSA')
 
