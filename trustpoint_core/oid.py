@@ -529,7 +529,7 @@ class PublicKeyAlgorithmOid(enum.Enum):
     RSA = PublicKeyAlgorithmOidData('1.2.840.113549.1.1.1', 'RSA')
 
     @property
-    def dotted_string(self) -> str | None:
+    def dotted_string(self) -> str:
         """Return the dotted string OID.
 
         Returns:
@@ -538,7 +538,7 @@ class PublicKeyAlgorithmOid(enum.Enum):
         return self.value.dotted_string
 
     @property
-    def verbose_name(self) -> str | None:
+    def verbose_name(self) -> str:
         """Return the verbose name for display.
 
         Returns:
@@ -547,7 +547,7 @@ class PublicKeyAlgorithmOid(enum.Enum):
         return self.value.verbose_name
 
     @classmethod
-    def from_dotted_string(cls, dotted_string: str | None) -> Self:
+    def from_dotted_string(cls, dotted_string: str) -> Self:
         """Return enum member matching a dotted_string."""
         for m in cls:
             if m.value.dotted_string == dotted_string:
@@ -556,7 +556,7 @@ class PublicKeyAlgorithmOid(enum.Enum):
         raise ValueError(err_msg)
 
     @classmethod
-    def from_verbose_name(cls, verbose_name: str | None) -> Self:
+    def from_verbose_name(cls, verbose_name: str) -> Self:
         """Return enum member matching a verbose_name."""
         for m in cls:
             if m.value.verbose_name == verbose_name:
