@@ -1,6 +1,6 @@
 [project]
 name = "trustpoint-core"
-version = "0.2.4"
+version = "0.2.5"
 description = "Trustpoint core functionalities used by several other Trustpoint repositories."
 requires-python = ">=3.12"
 dependencies = [
