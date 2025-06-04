@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec, rsa
 
-from trustpoint_core.key_types import PrivateKey, PublicKey
+from trustpoint_core.crypto_types import PrivateKey, PublicKey
 
 if TYPE_CHECKING:
     from typing import Self

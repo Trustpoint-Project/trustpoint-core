@@ -10,7 +10,7 @@ from cryptography import x509
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import Encoding, PrivateFormat, pkcs7, pkcs12
 
-from trustpoint_core.key_types import PrivateKey, PublicKey
+from trustpoint_core.crypto_types import PrivateKey, PublicKey
 
 if typing.TYPE_CHECKING:
     from collections.abc import Callable
