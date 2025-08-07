@@ -17,6 +17,29 @@ if typing.TYPE_CHECKING:
     from typing import Self
 
 
+class PrivateKeyLocation(enum.Enum):
+    """Enum to indicate where the private key is located."""
+    SOFTWARE = 'software'
+    HSM_PROVIDED = 'hsm_provided'
+    HSM_GENERATED = 'hsm_generated'
+
+
+class HSMKeyReference:
+    """Reference to a private key stored in HSM."""
+
+    def __init__(self, key_label: str, slot_id: str | None = None, token_label: str | None= None) -> None:
+        """Initialize HSM key reference.
+
+        Args:
+            key_label: Unique identifier for the key in HSM
+            slot_id: HSM slot identifier (optional)
+            token_label: HSM token label (optional)
+        """
+        self.key_label = key_label
+        self.slot_id = slot_id
+        self.token_label = token_label
+
+
 class CertificateFormat(enum.Enum):
     """Supported certificate formats."""
 
@@ -111,7 +134,7 @@ def load_pkcs12_bytes(p12: bytes, password: bytes | None = None) -> pkcs12.PKCS1
 
 
 def get_encryption_algorithm(
-    password: None | bytes = None,
+        password: None | bytes = None,
 ) -> serialization.KeySerializationEncryption:
     """Returns the encryption algorithm to use.
 
@@ -124,7 +147,7 @@ def get_encryption_algorithm(
     Raises:
         ValueError if getting the BestAvailableEncryption algorithm failed.
     """
-    if password is None:
+    if password is None or password == b'':
         return serialization.NoEncryption()
 
     try:
@@ -1060,7 +1083,7 @@ class CertificateCollectionSerializer:
 
     @classmethod
     def from_pkcs12_bytes_additional_certs_only(
-        cls, p12: bytes, password: bytes | None = None
+            cls, p12: bytes, password: bytes | None = None
     ) -> CertificateCollectionSerializer:
         """Creates a CertificateCollectionSerializer from a PKCS#12 structure excluding the credential certificate.
 
@@ -1131,8 +1154,8 @@ class CertificateCollectionSerializer:
         raise ValueError(err_msg)
 
     def __add__(
-        self,
-        other: x509.Certificate | CertificateSerializer | CertificateCollectionSerializer,
+            self,
+            other: x509.Certificate | CertificateSerializer | CertificateCollectionSerializer,
     ) -> CertificateCollectionSerializer:
         """Adds certificates to the CertificateCollectionSerializer.
 
@@ -1268,26 +1291,30 @@ class CredentialSerializer:
     certificate chain at all.
     """
 
-    _private_key: PrivateKey | None
+    _private_key: PrivateKey | HSMKeyReference | None
+    _private_key_location: PrivateKeyLocation
     _certificate: x509.Certificate | None
     _additional_certificates: list[x509.Certificate]
 
     def __init__(
-        self,
-        private_key: PrivateKey | None = None,
-        certificate: x509.Certificate | None = None,
-        additional_certificates: list[x509.Certificate] | None = None,
+            self,
+            private_key: PrivateKey | HSMKeyReference | None = None,
+            private_key_location: PrivateKeyLocation = PrivateKeyLocation.SOFTWARE,
+            certificate: x509.Certificate | None = None,
+            additional_certificates: list[x509.Certificate] | None = None,
     ) -> None:
         """Initializes a CredentialSerializer with the provided private key, certificate and additional certificates.
 
         Args:
-            private_key: The private key to include in the credential.
+            private_key: The private key to include in the credential (software key or HSM reference).
+            private_key_location: Location/type of the private key.
             certificate: The certificate matching the private key.
             additional_certificates: Any further certificates, usually this will only be the certificate chain.
 
         Raises:
             TypeError: If an invalid type is provided for one of the arguments.
         """
+        self.private_key_location = private_key_location
         self.private_key = private_key
         self.certificate = certificate
         if additional_certificates is None:
@@ -1296,16 +1323,16 @@ class CredentialSerializer:
             self.additional_certificates = additional_certificates
 
     @property
-    def private_key(self) -> PrivateKey | None:
+    def private_key(self) -> PrivateKey | HSMKeyReference | None:
         """Property to get the private key object.
 
         Returns:
-            The private key object or None.
+            The private key object, HSM reference, or None.
         """
         return self._private_key
 
     @private_key.setter
-    def private_key(self, private_key: PrivateKey | None) -> None:
+    def private_key(self, private_key: PrivateKey | HSMKeyReference | None) -> None:
         """Property to set the private key object.
 
         Args:
@@ -1313,13 +1340,24 @@ class CredentialSerializer:
 
         Raises:
             TypeError: If the provided private key is not None or not a supported private key type.
+            ValueError: If the private key type doesn't match the specified location.
         """
         if isinstance(private_key, PrivateKeySerializer):
             private_key = private_key.as_crypto()
 
-        if not (private_key is None or isinstance(private_key, PrivateKey)):
-            err_msg = f'Expected private_key to be a PrivateKey object, but got {type(private_key)}.'
+        if not (private_key is None or isinstance(private_key, (PrivateKey, HSMKeyReference))):
+            err_msg = f'Expected private_key to be a PrivateKey or HSMKeyReference object, but got {type(private_key)}.'
             raise TypeError(err_msg)
+
+        if private_key is not None:
+            if isinstance(private_key, HSMKeyReference) and self._private_key_location == PrivateKeyLocation.SOFTWARE:
+                err_msg = 'HSMKeyReference provided but private_key_location is SOFTWARE'
+                raise ValueError(err_msg)
+            if isinstance(private_key, PrivateKey) and self._private_key_location in [PrivateKeyLocation.HSM_PROVIDED,
+                                                                                        PrivateKeyLocation.HSM_GENERATED]:
+                err_msg = 'Software PrivateKey provided but private_key_location indicates HSM'
+                raise ValueError(err_msg)
+
         self._private_key = private_key
 
     @private_key.deleter
@@ -1331,7 +1369,64 @@ class CredentialSerializer:
         """Gets the private key serializer."""
         if not self.private_key:
             return None
+
+        if isinstance(self.private_key, HSMKeyReference):
+            err_msg = 'Cannot serialize private key of type HSMKeyReference'
+            raise ValueError(err_msg)
+
         return PrivateKeySerializer(self.private_key)
+
+    @property
+    def private_key_location(self) -> PrivateKeyLocation:
+        """Property to get the private key location.
+
+        Returns:
+            The private key location enum.
+        """
+        return self._private_key_location
+
+    @private_key_location.setter
+    def private_key_location(self, location: PrivateKeyLocation) -> None:
+        """Property to set the private key location.
+
+        Args:
+            location: The location/type of the private key.
+
+        Raises:
+            TypeError: If location is not a PrivateKeyLocation enum.
+        """
+        if not isinstance(location, PrivateKeyLocation):
+            err_msg = f'Expected location to be a PrivateKeyLocation enum, but got {type(location)}.'
+            raise TypeError(err_msg)
+        self._private_key_location = location
+
+    @property
+    def is_hsm_key(self) -> bool:
+        """Check if the private key is stored in HSM.
+
+        Returns:
+            True if the private key is in HSM (provided or generated), False otherwise.
+        """
+        return self._private_key_location in [PrivateKeyLocation.HSM_PROVIDED, PrivateKeyLocation.HSM_GENERATED]
+
+    @property
+    def is_hsm_generated_key(self) -> bool:
+        """Check if the private key was generated inside HSM.
+
+        Returns:
+            True if the private key was generated in HSM, False otherwise.
+        """
+        return self._private_key_location == PrivateKeyLocation.HSM_GENERATED
+
+    def get_hsm_key_reference(self) -> HSMKeyReference | None:
+        """Gets the HSM key reference if the private key is stored in HSM.
+
+        Returns:
+            HSMKeyReference if private key is in HSM, None otherwise.
+        """
+        if self.is_hsm_key and isinstance(self._private_key, HSMKeyReference):
+            return self._private_key
+        return None
 
     @property
     def certificate(self) -> x509.Certificate | None:
@@ -1410,18 +1505,16 @@ class CredentialSerializer:
         """Property to delete the additional_certificates object."""
         self._additional_certificates = []
 
-    def get_additional_certificates_serializer(self) -> CertificateCollectionSerializer | None:
+    def get_additional_certificates_serializer(self) -> CertificateCollectionSerializer:
         """Gets the additional certificates as a CertificateCollectionSerializer object."""
-        if not self.additional_certificates:
-            return None
-        return CertificateCollectionSerializer(self.additional_certificates)
+        return CertificateCollectionSerializer(self.additional_certificates or [])
 
     @classmethod
     def from_serializers(
-        cls,
-        private_key_serializer: PrivateKeySerializer | None = None,
-        certificate_serializer: CertificateSerializer | None = None,
-        certificate_collection_serializer: CertificateCollectionSerializer | None = None,
+            cls,
+            private_key_serializer: PrivateKeySerializer | None = None,
+            certificate_serializer: CertificateSerializer | None = None,
+            certificate_collection_serializer: CertificateCollectionSerializer | None = None,
     ) -> CredentialSerializer:
         """Creates a CredentialSerializer from the private key, certificate and certificate collection serializers.
 
@@ -1467,6 +1560,39 @@ class CredentialSerializer:
         return cls.from_pkcs12(loaded_p12)
 
     @classmethod
+    def from_hsm_key_reference(
+            cls,
+            hsm_key_ref: HSMKeyReference,
+            location: PrivateKeyLocation,
+            certificate: x509.Certificate | None = None,
+            additional_certificates: list[x509.Certificate] | None = None,
+    ) -> CredentialSerializer:
+        """Creates a CredentialSerializer with an HSM key reference.
+
+        Args:
+            hsm_key_ref: Reference to the HSM key.
+            location: Whether the key was provided or generated in HSM.
+            certificate: The certificate matching the private key.
+            additional_certificates: Any further certificates.
+
+        Returns:
+            The created CredentialSerializer.
+
+        Raises:
+            ValueError: If location is SOFTWARE when HSM key reference is provided.
+        """
+        if location == PrivateKeyLocation.SOFTWARE:
+            err_msg = 'Cannot use HSM key reference with SOFTWARE location'
+            raise ValueError(err_msg)
+
+        return cls(
+            private_key=hsm_key_ref,
+            private_key_location=location,
+            certificate=certificate,
+            additional_certificates=additional_certificates,
+        )
+
+    @classmethod
     def from_pkcs12(cls, p12: pkcs12.PKCS12KeyAndCertificates) -> CredentialSerializer:
         """Creates a CredentialSerializer from a PKCS#12 structure.
 
@@ -1492,7 +1618,14 @@ class CredentialSerializer:
             err_msg = f'p12.key contains is a key type that is not supported: {type(private_key)}.'
             raise TypeError(err_msg)
 
-        return cls(private_key, certificate, additional_certificates)
+        private_key_location = PrivateKeyLocation.SOFTWARE
+
+        return cls(
+            private_key,
+            private_key_location,
+            certificate,
+            additional_certificates
+        )
 
     def as_pkcs12(self, password: None | bytes = None, friendly_name: bytes = b'') -> bytes:
         """Gets the associated private key as bytes in a PKCS#12 structure.
@@ -1511,6 +1644,10 @@ class CredentialSerializer:
                 If the CredentialSerializer does not contain at least one of the following:
                 private key, certificate or certificate collection or getting the BestAvailableEncryption failed.
         """
+        if isinstance(self.private_key, HSMKeyReference):
+            err_msg = 'Cannot export HSM keys to PKCS#12 format'
+            raise ValueError(err_msg)
+
         if self.private_key is None and self.certificate is None and not self.additional_certificates:
             err_msg = (
                 'Cannot create a PKCS#12 structure without at least on of the following:'
