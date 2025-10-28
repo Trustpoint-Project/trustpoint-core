@@ -17,10 +17,9 @@ from trustpoint_core import serializer
 from trustpoint_core.serializer import (
     CertificateCollectionSerializer,
     CertificateSerializer,
+    CredentialSerializer,
     PrivateKeySerializer,
     PublicKeySerializer,
-    CredentialSerializer,
-    PrivateKeyLocation
 )
 
 
@@ -144,13 +143,17 @@ def generate_pkcs12_data() -> tuple[bytes, bytes]:
     return p12_data, password
 
 @pytest.fixture
-def generate_hsm_key_reference() -> serializer.HSMKeyReference:
-    """Fixture to generate HSM key reference for testing.
+def generate_private_key_reference() -> serializer.PrivateKeyReference:
+    """Fixture to generate PrivateKeyReference for testing.
 
     Returns:
-        HSMKeyReference object.
+        PrivateKeyReference object.
     """
-    return serializer.HSMKeyReference(key_label='test_key_id', slot_id="1", token_label='test_token')
+    return serializer.PrivateKeyReference.hsm_provided(
+        key_label='test_key_id',
+        key_type=rsa.RSAPrivateKey,
+        key_size=2048
+    )
 
 
 @pytest.fixture
@@ -988,13 +991,16 @@ def test_credential_serializer_get_private_key_serializer_none() -> None:
 def test_credential_serializer_private_key_location_property() -> None:
     """This checks if private_key_location property works correctly."""
     credential = serializer.CredentialSerializer()
-    assert credential.private_key_location == serializer.PrivateKeyLocation.SOFTWARE
+    assert credential._private_key_reference.location == serializer.PrivateKeyLocation.SOFTWARE
 
 def test_credential_serializer_private_key_location_setter() -> None:
     """This checks if private_key_location setter works correctly."""
     credential = serializer.CredentialSerializer()
-    credential.private_key_location = serializer.PrivateKeyLocation.HSM_PROVIDED
-    assert credential.private_key_location == serializer.PrivateKeyLocation.HSM_PROVIDED
+    credential._private_key_reference = serializer.PrivateKeyReference(
+        location=serializer.PrivateKeyLocation.HSM_PROVIDED,
+        key_label='test_key'
+    )
+    assert credential._private_key_reference.location == serializer.PrivateKeyLocation.HSM_PROVIDED
 
 
 def test_credential_serializer_is_hsm_key() -> None:
@@ -1005,30 +1011,34 @@ def test_credential_serializer_is_hsm_key() -> None:
     assert not credential.is_hsm_key
 
     # Test with HSM key
-    credential_hsm = serializer.CredentialSerializer()
-    credential_hsm.private_key_location = serializer.PrivateKeyLocation.HSM_PROVIDED
+    credential_hsm = serializer.CredentialSerializer(
+        private_key_reference=serializer.PrivateKeyReference.hsm_provided(key_label='test_key')
+    )
     assert credential_hsm.is_hsm_key
 
 
 def test_credential_serializer_is_hsm_generated_key() -> None:
     """This checks if is_hsm_generated_key works correctly."""
-    credential = serializer.CredentialSerializer()
-    credential.private_key_location = serializer.PrivateKeyLocation.HSM_GENERATED
+    credential = serializer.CredentialSerializer(
+        private_key_reference=serializer.PrivateKeyReference.hsm_generated(key_label='test_key')
+    )
     assert credential.is_hsm_generated_key
 
-    credential.private_key_location = serializer.PrivateKeyLocation.SOFTWARE
-    assert not credential.is_hsm_generated_key
+    credential_software = serializer.CredentialSerializer()
+    assert not credential_software.is_hsm_generated_key
 
 
-def test_credential_serializer_get_hsm_key_reference(generate_hsm_key_reference: serializer.HSMKeyReference) -> None:
+def test_credential_serializer_get_hsm_key_reference(
+        generate_private_key_reference: serializer.PrivateKeyReference) -> None:
     """This checks if get_hsm_key_reference works correctly."""
-    credential = serializer.CredentialSerializer()
-    credential.private_key_location = serializer.PrivateKeyLocation.HSM_PROVIDED
-    # The HSM key reference needs to be set through the private_key property
-    credential.private_key = generate_hsm_key_reference  # type: ignore[assignment]
+    credential = serializer.CredentialSerializer(
+        private_key_reference=generate_private_key_reference
+    )
 
     result = credential.get_hsm_key_reference()
-    assert result == generate_hsm_key_reference
+    assert result == generate_private_key_reference
+    assert result is not None
+    assert result.key_label == 'test_key_id'
 
 def test_credential_serializer_certificate_property(generate_certificate: Certificate) -> None:
     """This checks if certificate property works correctly."""
@@ -1193,32 +1203,36 @@ def test_credential_serializer_from_pkcs12_bytes_invalid() -> None:
         serializer.CredentialSerializer.from_pkcs12_bytes(b'invalid', b'password')
 
 
-def test_credential_serializer_from_hsm_key_reference(generate_hsm_key_reference: serializer.HSMKeyReference) -> None:
-    """This checks if from_hsm_key_reference works correctly."""
-    credential = serializer.CredentialSerializer.from_hsm_key_reference(
-        hsm_key_ref=generate_hsm_key_reference,
-        location=PrivateKeyLocation.HSM_PROVIDED
+def test_credential_serializer_from_hsm_key_reference(
+        generate_private_key_reference: serializer.PrivateKeyReference) -> None:
+    """This checks if initialization with PrivateKeyReference works correctly."""
+    credential = serializer.CredentialSerializer(
+        private_key_reference=generate_private_key_reference
     )
 
     assert credential.is_hsm_key
-    assert credential.get_hsm_key_reference() == generate_hsm_key_reference
+    assert credential.get_hsm_key_reference() == generate_private_key_reference
 
 
-def test_credential_serializer_from_hsm_key_reference_with_certs(generate_certificates: list[Certificate]) -> None:
-    """This checks if from_hsm_key_reference works with certificates.
+def test_credential_serializer_from_hsm_key_reference_with_certs(
+        generate_certificates: list[Certificate]) -> None:
+    """This checks if initialization with PrivateKeyReference and certificates works correctly.
 
     Args:
         generate_certificates: Contains list of certificates.
     """
-    hsm_key_ref = serializer.HSMKeyReference(key_label='test', slot_id="1", token_label='token')
+    private_key_ref = serializer.PrivateKeyReference.hsm_generated(
+        key_label='test',
+        key_type=rsa.RSAPrivateKey,
+        key_size=2048
+    )
     certificate = generate_certificates[0]
     additional_certs = generate_certificates[1:2]
 
-    credential = serializer.CredentialSerializer.from_hsm_key_reference(
-        hsm_key_ref=hsm_key_ref,
+    credential = serializer.CredentialSerializer(
+        private_key_reference=private_key_ref,
         certificate=certificate,
-        additional_certificates=additional_certs,
-        location=PrivateKeyLocation.HSM_GENERATED
+        additional_certificates=additional_certs
     )
 
     assert credential.is_hsm_key

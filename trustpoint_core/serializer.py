@@ -32,7 +32,7 @@ class PrivateKeyReference:
             self,
             location: PrivateKeyLocation,
             key_label: str | None = None,
-            key_type: PrivateKey | None = None,
+            key_type: type[PrivateKey] | None = None,
             key_size: int | None = None,
             key_curve: NamedCurve | None = None
     ) -> None:
@@ -52,13 +52,13 @@ class PrivateKeyReference:
         self.key_curve = key_curve
 
     @classmethod
-    def software(cls) -> 'PrivateKeyReference':
+    def software(cls) -> PrivateKeyReference:
         """Create a reference for a software-stored private key."""
         return cls(location=PrivateKeyLocation.SOFTWARE)
 
     @classmethod
-    def hsm_provided(cls, key_label: str, key_type: PrivateKey | None = None,
-                     key_size: int | None = None, key_curve: NamedCurve | None = None) -> 'PrivateKeyReference':
+    def hsm_provided(cls, key_label: str, key_type: type[PrivateKey] | None = None,
+                     key_size: int | None = None, key_curve: NamedCurve | None = None) -> PrivateKeyReference:
         """Create a reference for an HSM-provided private key."""
         return cls(
             location=PrivateKeyLocation.HSM_PROVIDED,
@@ -69,8 +69,8 @@ class PrivateKeyReference:
         )
 
     @classmethod
-    def hsm_generated(cls, key_label: str, key_type: PrivateKey | None = None,
-                      key_size: int | None = None, key_curve: NamedCurve | None = None) -> 'PrivateKeyReference':
+    def hsm_generated(cls, key_label: str, key_type: type[PrivateKey] | None = None,
+                      key_size: int | None = None, key_curve: NamedCurve | None = None) -> PrivateKeyReference:
         """Create a reference for an HSM-generated private key."""
         return cls(
             location=PrivateKeyLocation.HSM_GENERATED,
@@ -108,10 +108,11 @@ class PrivateKeyReference:
 
         elif isinstance(private_key, ec.EllipticCurvePrivateKey):
             self.key_type = ec.EllipticCurvePrivateKey
-            self.key_curve = private_key.curve
+            self.key_curve = NamedCurve.from_curve(type(private_key.curve))
             self.key_size = None
         else:
-            raise ValueError(f"Unsupported private key type: {type(private_key)}")
+            msg = f'Unsupported private key type: {type(private_key)}'
+            raise TypeError(msg)
 
     @classmethod
     def from_private_key(
@@ -119,7 +120,7 @@ class PrivateKeyReference:
             private_key: PrivateKey,
             location: PrivateKeyLocation = PrivateKeyLocation.SOFTWARE,
             key_label: str | None = None,
-    ) -> 'PrivateKeyReference':
+    ) -> PrivateKeyReference:
         """Create a PrivateKeyReference from a cryptography private key.
 
         Args:
@@ -136,6 +137,7 @@ class PrivateKeyReference:
         )
         ref.set_key_details_from_private_key(private_key)
         return ref
+
 
 class CertificateFormat(enum.Enum):
     """Supported certificate formats."""
@@ -1389,7 +1391,7 @@ class CredentialSerializer:
     """
 
     _private_key: PrivateKey | None
-    _private_key_reference: PrivateKeyReference | None
+    _private_key_reference: PrivateKeyReference
     _certificate: x509.Certificate | None
     _additional_certificates: list[x509.Certificate]
 
@@ -1412,7 +1414,11 @@ class CredentialSerializer:
             TypeError: If an invalid type is provided for one of the arguments.
         """
         self.private_key = private_key
-        self._private_key_reference = private_key_reference or PrivateKeyReference.software()
+        self._private_key_reference = (
+            private_key_reference
+            if private_key_reference is not None
+            else PrivateKeyReference.software()
+        )
         self.certificate = certificate
         if additional_certificates is None:
             self.additional_certificates = []
@@ -1452,6 +1458,16 @@ class CredentialSerializer:
     def private_key(self) -> None:
         """Property to delete the private key object."""
         self._private_key = None
+
+    @property
+    def private_key_reference(self) -> PrivateKeyReference:
+        """Get the private key reference."""
+        return self._private_key_reference
+
+    @private_key_reference.setter
+    def private_key_reference(self, value: PrivateKeyReference) -> None:
+        """Set the private key reference."""
+        self._private_key_reference = value
 
     def get_private_key_serializer(self) -> PrivateKeySerializer | None:
         """Gets the private key serializer."""
@@ -1669,13 +1685,10 @@ class CredentialSerializer:
             err_msg = f'p12.key contains is a key type that is not supported: {type(private_key)}.'
             raise TypeError(err_msg)
 
-        private_key_location = PrivateKeyLocation.SOFTWARE
-
         return cls(
-            private_key,
-            private_key_location,
-            certificate,
-            additional_certificates
+            private_key=private_key,
+            certificate=certificate,
+            additional_certificates=additional_certificates
         )
 
     def as_pkcs12(self, password: None | bytes = None, friendly_name: bytes = b'') -> bytes:
