@@ -21,6 +21,8 @@ from trustpoint_core.serializer import (
     PublicKeySerializer,
 )
 
+# ruff: noqa: SLF001, PLR2004
+
 
 @pytest.fixture
 def generate_private_key() -> RSAPrivateKey:
@@ -45,13 +47,13 @@ def generate_public_key(generate_private_key: RSAPrivateKey) -> RSAPublicKey:
 
 
 @pytest.fixture
-def generate_certificate() -> Certificate:
+def generate_certificate(generate_private_key: RSAPrivateKey) -> Certificate:
     """Fixture to generate a self-signed certificate for testing.
 
     Returns:
         Certificate
     """
-    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    private_key = generate_private_key
     public_key = private_key.public_key()
 
     subject = issuer = x509.Name([x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, 'Test Certificate')])
@@ -141,6 +143,61 @@ def generate_pkcs12_data() -> tuple[bytes, bytes]:
     )
     return p12_data, password
 
+@pytest.fixture
+def generate_private_key_reference() -> serializer.PrivateKeyReference:
+    """Fixture to generate PrivateKeyReference for testing.
+
+    Returns:
+        PrivateKeyReference object.
+    """
+    return serializer.PrivateKeyReference.hsm_provided(
+        key_label='test_key_id',
+        key_type=rsa.RSAPrivateKey,
+        key_size=2048
+    )
+
+
+@pytest.fixture
+def generate_credential_data() -> tuple[RSAPrivateKey, Certificate, list[Certificate]]:
+    """Fixture to generate credential data for testing.
+
+    Returns:
+        Tuple containing private key, certificate, and additional certificates.
+    """
+    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+
+    # Generate main certificate
+    subject = issuer = x509.Name([x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, 'Test Certificate')])
+    certificate = (
+        x509.CertificateBuilder()
+        .subject_name(subject)
+        .issuer_name(issuer)
+        .public_key(private_key.public_key())
+        .serial_number(x509.random_serial_number())
+        .not_valid_before(datetime.now(UTC))
+        .not_valid_after(datetime.now(UTC) + timedelta(days=365))
+        .sign(private_key, algorithm=hashes.SHA256())
+    )
+
+    # Generate additional certificates
+    additional_certs = []
+    for i in range(2):
+        additional_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        additional_subject = x509.Name([x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, f'Additional Cert {i}')])
+        additional_cert = (
+            x509.CertificateBuilder()
+            .subject_name(additional_subject)
+            .issuer_name(additional_subject)
+            .public_key(additional_key.public_key())
+            .serial_number(x509.random_serial_number())
+            .not_valid_before(datetime.now(UTC))
+            .not_valid_after(datetime.now(UTC) + timedelta(days=365))
+            .sign(additional_key, algorithm=hashes.SHA256())
+        )
+        additional_certs.append(additional_cert)
+
+    return private_key, certificate, additional_certs
+
 
 def test_load_pkc12(generate_pkcs12_data: tuple[bytes, bytes]) -> None:
     """This checks if function loads pkcs12 data, when input is correct.
@@ -203,7 +260,7 @@ def test_get_encryption_algorithme_valid() -> None:
 
 def test_get_encryption_algorithm_invalid() -> None:
     """This checks if function gets encryption algorithm. when input is invalid."""
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError, match='Failed to get the BestAvailableEncryption algorithm.'):
         serializer.get_encryption_algorithm(' ')  # type: ignore[arg-type]
 
 
@@ -325,7 +382,7 @@ def test_publickey_from_certificate(generate_certificate: Certificate) -> None:
 
 def test_publickey_from_certificate_invalid() -> None:
     """This checks if function fails to load a public key if given invalid certificate object."""
-    with pytest.raises(TypeError, match='Expected a certificate object'):
+    with pytest.raises(TypeError, match='Object of type .* does not have a public_key\\(\\) method'):
         PublicKeySerializer.from_certificate('invalid_certificate')  # type: ignore[arg-type]
 
 
@@ -866,3 +923,412 @@ def test_len_function_of_certificate_collection_serializer(generate_certificates
     """
     serializer = CertificateCollectionSerializer(generate_certificates)
     assert len(serializer) == EXPECTED_COLLECTION_SIZE
+
+### From here test starts for CredentialSerializer
+
+def test_credential_serializer_init_all_params(
+        generate_credential_data: tuple[RSAPrivateKey, Certificate, list[Certificate]]) -> None:
+    """This checks if CredentialSerializer initializes with all parameters.
+
+    Args:
+        generate_credential_data: Contains private key, certificate, and additional certificates.
+    """
+    private_key, certificate, additional_certs = generate_credential_data
+
+    credential = serializer.CredentialSerializer(
+        private_key=private_key,
+        certificate=certificate,
+        additional_certificates=additional_certs
+    )
+
+    assert credential.private_key == private_key
+    assert credential.certificate == certificate
+    assert credential.additional_certificates == additional_certs
+
+
+def test_credential_serializer_init_minimal() -> None:
+    """This checks if CredentialSerializer initializes with minimal parameters."""
+    credential = serializer.CredentialSerializer()
+
+    assert credential.private_key is None
+    assert credential.certificate is None
+    assert credential.additional_certificates == []
+
+
+def test_credential_serializer_private_key_property(generate_private_key: RSAPrivateKey) -> None:
+    """This checks if private_key property works correctly."""
+    credential = serializer.CredentialSerializer(private_key=generate_private_key)
+    assert credential.private_key == generate_private_key
+
+def test_credential_serializer_private_key_setter(generate_private_key: RSAPrivateKey) -> None:
+    """This checks if private_key setter works correctly."""
+    credential = serializer.CredentialSerializer()
+    credential.private_key = generate_private_key
+    assert credential.private_key == generate_private_key
+
+
+def test_credential_serializer_private_key_deleter() -> None:
+    """This checks if private_key deleter works correctly."""
+    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    credential = serializer.CredentialSerializer(private_key=private_key)
+
+    del credential.private_key
+    assert credential.private_key is None
+
+
+def test_credential_serializer_get_private_key_serializer(generate_private_key: RSAPrivateKey) -> None:
+    """This checks if get_private_key_serializer works correctly."""
+    credential = serializer.CredentialSerializer(private_key=generate_private_key)
+    private_key_serializer = credential.get_private_key_serializer()
+
+    assert isinstance(private_key_serializer, PrivateKeySerializer)
+    assert private_key_serializer.as_crypto() == generate_private_key
+
+def test_credential_serializer_get_private_key_serializer_none() -> None:
+    """This checks if get_private_key_serializer returns None when no private key."""
+    credential = serializer.CredentialSerializer()
+    assert credential.get_private_key_serializer() is None
+
+def test_credential_serializer_private_key_location_property() -> None:
+    """This checks if private_key_location property works correctly."""
+    credential = serializer.CredentialSerializer()
+    assert credential._private_key_reference.location == serializer.PrivateKeyLocation.SOFTWARE
+
+def test_credential_serializer_private_key_location_setter() -> None:
+    """This checks if private_key_location setter works correctly."""
+    credential = serializer.CredentialSerializer()
+    credential._private_key_reference = serializer.PrivateKeyReference(
+        location=serializer.PrivateKeyLocation.HSM_PROVIDED,
+        key_label='test_key'
+    )
+    assert credential._private_key_reference.location == serializer.PrivateKeyLocation.HSM_PROVIDED
+
+
+def test_credential_serializer_is_hsm_key() -> None:
+    """This checks if is_hsm_key works correctly."""
+    # Test with software key
+    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    credential = serializer.CredentialSerializer(private_key=private_key)
+    assert not credential.is_hsm_key
+
+    # Test with HSM key
+    credential_hsm = serializer.CredentialSerializer(
+        private_key_reference=serializer.PrivateKeyReference.hsm_provided(key_label='test_key')
+    )
+    assert credential_hsm.is_hsm_key
+
+
+def test_credential_serializer_is_hsm_generated_key() -> None:
+    """This checks if is_hsm_generated_key works correctly."""
+    credential = serializer.CredentialSerializer(
+        private_key_reference=serializer.PrivateKeyReference.hsm_generated(key_label='test_key')
+    )
+    assert credential.is_hsm_generated_key
+
+    credential_software = serializer.CredentialSerializer()
+    assert not credential_software.is_hsm_generated_key
+
+
+def test_credential_serializer_get_hsm_key_reference(
+        generate_private_key_reference: serializer.PrivateKeyReference) -> None:
+    """This checks if get_hsm_key_reference works correctly."""
+    credential = serializer.CredentialSerializer(
+        private_key_reference=generate_private_key_reference
+    )
+
+    result = credential.get_hsm_key_reference()
+    assert result == generate_private_key_reference
+    assert result is not None
+    assert result.key_label == 'test_key_id'
+
+def test_credential_serializer_certificate_property(generate_certificate: Certificate) -> None:
+    """This checks if certificate property works correctly."""
+    credential = serializer.CredentialSerializer(certificate=generate_certificate)
+    assert credential.certificate == generate_certificate
+
+def test_credential_serializer_certificate_setter(generate_certificate: Certificate) -> None:
+    """This checks if certificate setter works correctly."""
+    credential = serializer.CredentialSerializer()
+    credential.certificate = generate_certificate
+    assert credential.certificate == generate_certificate
+
+
+def test_credential_serializer_certificate_deleter() -> None:
+    """This checks if certificate deleter works correctly."""
+    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    subject = x509.Name([x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, 'Test Certificate')])
+    certificate = (
+        x509.CertificateBuilder()
+        .subject_name(subject)
+        .issuer_name(subject)
+        .public_key(private_key.public_key())
+        .serial_number(x509.random_serial_number())
+        .not_valid_before(datetime.now(UTC))
+        .not_valid_after(datetime.now(UTC) + timedelta(days=365))
+        .sign(private_key, algorithm=hashes.SHA256())
+    )
+
+    credential = serializer.CredentialSerializer(certificate=certificate)
+    del credential.certificate
+    assert credential.certificate is None
+
+
+def test_credential_serializer_get_certificate_serializer(generate_certificate: Certificate) -> None:
+    """This checks if get_certificate_serializer works correctly."""
+    credential = serializer.CredentialSerializer(certificate=generate_certificate)
+    certificate_serializer = credential.get_certificate_serializer()
+
+    assert isinstance(certificate_serializer, CertificateSerializer)
+    assert certificate_serializer.as_crypto() == generate_certificate
+
+def test_credential_serializer_get_certificate_serializer_none() -> None:
+    """This checks if get_certificate_serializer returns None when no certificate."""
+    credential = serializer.CredentialSerializer()
+    assert credential.get_certificate_serializer() is None
+
+
+def test_credential_serializer_additional_certificates_property(generate_certificates: list[Certificate]) -> None:
+    """This checks if additional_certificates property works correctly.
+
+    Args:
+        generate_certificates: Contains list of certificates.
+    """
+    additional_certs = generate_certificates[:2]
+    credential = serializer.CredentialSerializer(additional_certificates=additional_certs)
+    assert credential.additional_certificates == additional_certs
+
+
+def test_credential_serializer_additional_certificates_setter(generate_certificates: list[Certificate]) -> None:
+    """This checks if additional_certificates setter works correctly.
+
+    Args:
+        generate_certificates: Contains list of certificates.
+    """
+    additional_certs = generate_certificates[:2]
+    credential = serializer.CredentialSerializer()
+    credential.additional_certificates = additional_certs
+    assert credential.additional_certificates == additional_certs
+
+
+def test_credential_serializer_additional_certificates_deleter(generate_certificates: list[Certificate]) -> None:
+    """This checks if additional_certificates deleter works correctly.
+
+    Args:
+        generate_certificates: Contains list of certificates.
+    """
+    additional_certs = generate_certificates[:2]
+    credential = serializer.CredentialSerializer(additional_certificates=additional_certs)
+
+    del credential.additional_certificates
+    assert credential.additional_certificates == []
+
+
+def test_credential_serializer_get_additional_certificates_serializer(generate_certificates: list[Certificate]) -> None:
+    """This checks if get_additional_certificates_serializer works correctly.
+
+    Args:
+        generate_certificates: Contains list of certificates.
+    """
+    additional_certs = generate_certificates[:2]
+    credential = serializer.CredentialSerializer(additional_certificates=additional_certs)
+    collection_serializer = credential.get_additional_certificates_serializer()
+
+    assert isinstance(collection_serializer, CertificateCollectionSerializer)
+    assert len(collection_serializer.as_crypto()) == 2
+
+def test_credential_serializer_get_additional_certificates_serializer_empty() -> None:
+    """This checks if get_additional_certificates_serializer works with empty list."""
+    credential = serializer.CredentialSerializer()
+    collection_serializer = credential.get_additional_certificates_serializer()
+
+    assert isinstance(collection_serializer, CertificateCollectionSerializer)
+    assert len(collection_serializer.as_crypto()) == 0
+
+
+def test_credential_serializer_from_serializers(generate_certificates: list[Certificate],
+                                                generate_private_key: RSAPrivateKey) -> None:
+    """This checks if from_serializers class method works correctly.
+
+    Args:
+        generate_certificates: Contains list of certificates.
+        generate_private_key: Contains private key.
+    """
+    private_key = generate_private_key
+    certificate = generate_certificates[0]
+    additional_certs = generate_certificates[1:3]
+
+    private_key_serializer = PrivateKeySerializer(private_key)
+    certificate_serializer = CertificateSerializer(certificate)
+    collection_serializer = CertificateCollectionSerializer(additional_certs)
+
+    credential = serializer.CredentialSerializer.from_serializers(
+        private_key_serializer=private_key_serializer,
+        certificate_serializer=certificate_serializer,
+        certificate_collection_serializer=collection_serializer
+    )
+
+    assert credential.private_key == private_key
+    assert credential.certificate == certificate
+    assert len(credential.additional_certificates) == 2
+
+
+def test_credential_serializer_from_serializers_minimal() -> None:
+    """This checks if from_serializers works with minimal parameters."""
+    credential = serializer.CredentialSerializer.from_serializers()
+
+    assert credential.private_key is None
+    assert credential.certificate is None
+    assert credential.additional_certificates == []
+
+
+def test_credential_serializer_from_serializers_invalid() -> None:
+    """This checks if from_serializers raises TypeError with invalid input."""
+    with pytest.raises(TypeError,
+        match='Failed to extract the private key, certificate and certificate collection serializers.'
+        ):
+        serializer.CredentialSerializer.from_serializers(
+            private_key_serializer='invalid'  # type: ignore[arg-type]
+        )
+
+
+def test_credential_serializer_from_pkcs12_bytes(generate_pkcs12_data: tuple[bytes, bytes]) -> None:
+    """This checks if from_pkcs12_bytes works correctly."""
+    p12_data, password = generate_pkcs12_data
+    credential = serializer.CredentialSerializer.from_pkcs12_bytes(p12_data, password)
+
+    assert credential.private_key is not None
+    assert credential.certificate is not None
+
+
+def test_credential_serializer_from_pkcs12_bytes_invalid() -> None:
+    """This checks if from_pkcs12_bytes raises ValueError with invalid data."""
+    with pytest.raises(ValueError, match='Failed to load PKCS#12 bytes'):
+        serializer.CredentialSerializer.from_pkcs12_bytes(b'invalid', b'password')
+
+
+def test_credential_serializer_from_hsm_key_reference(
+        generate_private_key_reference: serializer.PrivateKeyReference) -> None:
+    """This checks if initialization with PrivateKeyReference works correctly."""
+    credential = serializer.CredentialSerializer(
+        private_key_reference=generate_private_key_reference
+    )
+
+    assert credential.is_hsm_key
+    assert credential.get_hsm_key_reference() == generate_private_key_reference
+
+
+def test_credential_serializer_from_hsm_key_reference_with_certs(
+        generate_certificates: list[Certificate]) -> None:
+    """This checks if initialization with PrivateKeyReference and certificates works correctly.
+
+    Args:
+        generate_certificates: Contains list of certificates.
+    """
+    private_key_ref = serializer.PrivateKeyReference.hsm_generated(
+        key_label='test',
+        key_type=rsa.RSAPrivateKey,
+        key_size=2048
+    )
+    certificate = generate_certificates[0]
+    additional_certs = generate_certificates[1:2]
+
+    credential = serializer.CredentialSerializer(
+        private_key_reference=private_key_ref,
+        certificate=certificate,
+        additional_certificates=additional_certs
+    )
+
+    assert credential.is_hsm_key
+    assert credential.certificate == certificate
+    assert len(credential.additional_certificates) == 1
+
+
+def test_credential_serializer_as_pkcs12(
+        generate_credential_data: tuple[RSAPrivateKey, Certificate, list[Certificate]]) -> None:
+    """This checks if as_pkcs12 works correctly."""
+    private_key, certificate, additional_certs = generate_credential_data
+    credential = serializer.CredentialSerializer(
+        private_key=private_key,
+        certificate=certificate,
+        additional_certificates=additional_certs
+    )
+
+    pkcs12_bytes = credential.as_pkcs12()
+    assert isinstance(pkcs12_bytes, bytes)
+    assert len(pkcs12_bytes) > 0
+
+
+def test_credential_serializer_as_pkcs12_with_password(generate_private_key: RSAPrivateKey,
+                                                       generate_certificate: Certificate) -> None:
+    """This checks if as_pkcs12 works with password.
+
+    Args:
+        generate_private_key: Contains private key.
+        generate_certificate: Contains certificate.
+    """
+    private_key = generate_private_key
+    certificate = generate_certificate
+
+    credential = serializer.CredentialSerializer(
+        private_key=private_key,
+        certificate=certificate
+    )
+
+    password = b'testpass123'
+    pkcs12_bytes = credential.as_pkcs12(password=password)
+    assert isinstance(pkcs12_bytes, bytes)
+    assert len(pkcs12_bytes) > 0
+
+
+def test_credential_serializer_get_full_chain_as_crypto(generate_private_key: RSAPrivateKey,
+                                                        generate_certificates: list[Certificate]) -> None:
+    """This checks if get_full_chain_as_crypto works correctly.
+
+    Args:
+        generate_private_key: Contains private key.
+        generate_certificates: Contains list of certificates.
+    """
+    private_key = generate_private_key
+    certificate = generate_certificates[0]
+    additional_certs = generate_certificates[1:3]
+
+    credential = serializer.CredentialSerializer(
+        private_key=private_key,
+        certificate=certificate,
+        additional_certificates=additional_certs
+    )
+
+    full_chain = credential.get_full_chain_as_crypto()
+    assert len(full_chain) == 3
+    assert full_chain[0] == certificate
+
+
+def test_credential_serializer_get_full_chain_as_crypto_no_cert() -> None:
+    """This checks if get_full_chain_as_crypto works with no certificate."""
+    credential = serializer.CredentialSerializer()
+    full_chain = credential.get_full_chain_as_crypto()
+    assert len(full_chain) == 0
+
+
+def test_credential_serializer_get_full_chain_as_serializer(generate_private_key: RSAPrivateKey,
+                                                            generate_certificates: list[Certificate]) -> None:
+    """This checks if get_full_chain_as_serializer works correctly.
+
+    Args:
+        generate_private_key: Contains private key.
+        generate_certificates: Contains list of certificates.
+    """
+    private_key = generate_private_key
+    certificate = generate_certificates[0]
+    additional_certs = generate_certificates[1:3]
+
+    credential = serializer.CredentialSerializer(
+        private_key=private_key,
+        certificate=certificate,
+        additional_certificates=additional_certs
+    )
+
+    full_chain_serializer = credential.get_full_chain_as_serializer()
+    assert isinstance(full_chain_serializer, CertificateCollectionSerializer)
+    assert len(full_chain_serializer.as_crypto()) == 3
+

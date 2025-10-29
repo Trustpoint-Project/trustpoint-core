@@ -1,6 +1,6 @@
 [project]
 name = "trustpoint-core"
-version = "0.2.5"
+version = "0.3.0"
 description = "Trustpoint core functionalities used by several other Trustpoint repositories."
 requires-python = ">=3.12"
 dependencies = [
@@ -52,9 +52,6 @@ convention = "google"
 
 [tool.mypy]
 strict = true
-
-[[tool.mypy.overrides]]
-ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 python_files = 'test_*.py'
