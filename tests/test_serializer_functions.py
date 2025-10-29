@@ -1183,7 +1183,9 @@ def test_credential_serializer_from_serializers_minimal() -> None:
 
 def test_credential_serializer_from_serializers_invalid() -> None:
     """This checks if from_serializers raises TypeError with invalid input."""
-    with pytest.raises(TypeError, match='Failed to extract the private key, certificate and certificate collection serializers.'):
+    with pytest.raises(TypeError,
+        match='Failed to extract the private key, certificate and certificate collection serializers.'
+        ):
         serializer.CredentialSerializer.from_serializers(
             private_key_serializer='invalid'  # type: ignore[arg-type]
         )
