@@ -32,7 +32,7 @@ jobs:
           --md-report-color never \
           --html=reports/pytest-report.html \
           --junitxml=reports/junit-report.xml \
-          trustpoint/ 
+          trustpoint_core/ 
 
       - name: Display Summary in GitHub Actions even if tests fail
         if: always()  # Ensures this step runs even if pytest fails.
