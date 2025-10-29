@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.12"
 
 [[package]]
@@ -448,7 +448,7 @@ wheels = [
 
 [[package]]
 name = "trustpoint-core"
-version = "0.2.5"
+version = "0.3.0"
 source = { editable = "." }
 dependencies = [
     { name = "cryptography" },
