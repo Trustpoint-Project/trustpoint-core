@@ -21,6 +21,9 @@ dev = [
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.uv]
+required-version = ">=0.8.20"
+
 [tool.ruff]
 line-length = 120
 indent-width = 4
@@ -51,11 +54,9 @@ convention = "google"
 strict = true
 
 [[tool.mypy.overrides]]
-module = ["crispy_bootstrap5.*", "crispy_forms.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = 'trustpoint.settings'
 python_files = 'test_*.py'
 md_report = true
 md_report_output = 'md-report.md'
