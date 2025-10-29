@@ -17,10 +17,11 @@ from trustpoint_core import serializer
 from trustpoint_core.serializer import (
     CertificateCollectionSerializer,
     CertificateSerializer,
-    CredentialSerializer,
     PrivateKeySerializer,
     PublicKeySerializer,
 )
+
+# ruff: noqa: SLF001, PLR2004
 
 
 @pytest.fixture
@@ -381,7 +382,7 @@ def test_publickey_from_certificate(generate_certificate: Certificate) -> None:
 
 def test_publickey_from_certificate_invalid() -> None:
     """This checks if function fails to load a public key if given invalid certificate object."""
-    with pytest.raises(TypeError, match="Object of type .* does not have a public_key\\(\\) method"):
+    with pytest.raises(TypeError, match='Object of type .* does not have a public_key\\(\\) method'):
         PublicKeySerializer.from_certificate('invalid_certificate')  # type: ignore[arg-type]
 
 
