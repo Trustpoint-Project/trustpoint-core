@@ -411,16 +411,6 @@ class NamedCurve(enum.Enum):
         ec.BrainpoolP512R1,
         'brainpoolP512r1',
     )
-    SECT163K1 = NamedCurveData('1.3.132.0.1', 'SECT163K1', 163, ec.SECT163K1, 'sect163r1')
-    SECT163R2 = NamedCurveData('1.3.132.0.15', 'SECT163R2', 163, ec.SECT163R2, 'sect163r2')
-    SECT233K1 = NamedCurveData('1.3.132.0.26', 'SECT233K1', 233, ec.SECT233K1, 'sect233k1')
-    SECT233R1 = NamedCurveData('1.3.132.0.27', 'SECT233R1', 233, ec.SECT233R1, 'sect233r1')
-    SECT283K1 = NamedCurveData('1.3.132.0.16', 'SECT283K1', 283, ec.SECT283K1, 'sect283k1')
-    SECT283R1 = NamedCurveData('1.3.132.0.17', 'SECT283R1', 283, ec.SECT283R1, 'sect283r1')
-    SECT409K1 = NamedCurveData('1.3.132.0.36', 'SECT409K1', 409, ec.SECT409K1, 'sect409k1')
-    SECT409R1 = NamedCurveData('1.3.132.0.37', 'SECT409R1', 409, ec.SECT409R1, 'sect409r1')
-    SECT571K1 = NamedCurveData('1.3.132.0.38', 'SECT571K1', 571, ec.SECT571K1, 'sect571k1')
-    SECT571R1 = NamedCurveData('1.3.132.0.39', 'SECT571R1', 571, ec.SECT571R1, 'sect571r1')
 
     @property
     def dotted_string(self) -> str:
