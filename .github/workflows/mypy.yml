@@ -1,4 +1,4 @@
-name: MyPy
+name: Code Quality / MyPy
 
 # Trigger this workflow on pull requests, ensuring type checks are performed before merging.
 on: [pull_request]

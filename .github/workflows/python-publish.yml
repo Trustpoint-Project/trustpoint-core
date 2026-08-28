@@ -1,4 +1,4 @@
-name: Publish Python Package to PyPi
+name: CI/CD / Publish Python Package to PyPi
 
 on:
   push:

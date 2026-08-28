@@ -8,7 +8,7 @@ import typing
 from cryptography import exceptions as crypto_exceptions
 from cryptography import x509
 from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import ec, rsa
+from cryptography.hazmat.primitives.asymmetric import ec, mldsa, rsa
 from cryptography.hazmat.primitives.serialization import Encoding, PrivateFormat, pkcs7, pkcs12
 
 from trustpoint_core.crypto_types import PrivateKey, PublicKey
@@ -110,6 +110,10 @@ class PrivateKeyReference:
             self.key_type = ec.EllipticCurvePrivateKey
             self.key_curve = NamedCurve.from_curve(type(private_key.curve))
             self.key_size = None
+        elif isinstance(private_key, (mldsa.MLDSA44PrivateKey, mldsa.MLDSA65PrivateKey, mldsa.MLDSA87PrivateKey)):
+            self.key_type = type(private_key)
+            self.key_size = None
+            self.key_curve = None
         else:
             msg = f'Unsupported private key type: {type(private_key)}'
             raise TypeError(msg)
@@ -634,6 +638,9 @@ class PrivateKeySerializer:
         Returns:
             Bytes object that contains the private key in PKCS#1 DER format.
         """
+        if isinstance(self._private_key, (mldsa.MLDSA44PrivateKey, mldsa.MLDSA65PrivateKey, mldsa.MLDSA87PrivateKey)):
+            msg = 'PKCS#1 serialization is not supported for ML-DSA private keys.'
+            raise TypeError(msg)
         return self._private_key.private_bytes(
             encoding=Encoding.DER,
             format=PrivateFormat.TraditionalOpenSSL,
@@ -651,6 +658,9 @@ class PrivateKeySerializer:
         Returns:
             Bytes object that contains the private key in PKCS#1 PEM format.
         """
+        if isinstance(self._private_key, (mldsa.MLDSA44PrivateKey, mldsa.MLDSA65PrivateKey, mldsa.MLDSA87PrivateKey)):
+            msg = 'PKCS#1 serialization is not supported for ML-DSA private keys.'
+            raise TypeError(msg)
         return self._private_key.private_bytes(
             encoding=Encoding.PEM,
             format=PrivateFormat.TraditionalOpenSSL,
@@ -703,6 +713,9 @@ class PrivateKeySerializer:
         Returns:
             Bytes object that contains the private key in a PKCS#12 structure.
         """
+        if isinstance(self._private_key, (mldsa.MLDSA44PrivateKey, mldsa.MLDSA65PrivateKey, mldsa.MLDSA87PrivateKey)):
+            msg = 'PKCS#12 serialization is not supported for ML-DSA private keys.'
+            raise TypeError(msg)
         return pkcs12.serialize_key_and_certificates(
             name=friendly_name,
             key=self._private_key,
@@ -1714,6 +1727,9 @@ class CredentialSerializer:
                 'private key, certificate or certificate collection.'
             )
             raise ValueError(err_msg)
+        if isinstance(self.private_key, (mldsa.MLDSA44PrivateKey, mldsa.MLDSA65PrivateKey, mldsa.MLDSA87PrivateKey)):
+            msg = 'PKCS#12 serialization is not supported for ML-DSA private keys.'
+            raise TypeError(msg)
         return pkcs12.serialize_key_and_certificates(
             name=friendly_name,
             key=self.private_key,

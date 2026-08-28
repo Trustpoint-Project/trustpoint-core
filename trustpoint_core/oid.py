@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import ec, rsa
+from cryptography.hazmat.primitives.asymmetric import ec, mldsa, rsa
 
 from trustpoint_core.crypto_types import PrivateKey, PublicKey
 
@@ -20,6 +20,10 @@ if TYPE_CHECKING:
 
 RSA_MIN_KEY_SIZE = 2048
 EC_MIN_KEY_SIZE = 128
+
+ML_DSA_44_PUBLIC_KEY_SIZE = 1312
+ML_DSA_65_PUBLIC_KEY_SIZE = 1952
+ML_DSA_87_PUBLIC_KEY_SIZE = 2592
 
 
 @dataclass(frozen=True)
@@ -517,6 +521,9 @@ class PublicKeyAlgorithmOid(enum.Enum):
 
     ECC = PublicKeyAlgorithmOidData('1.2.840.10045.2.1', 'ECC')
     RSA = PublicKeyAlgorithmOidData('1.2.840.113549.1.1.1', 'RSA')
+    ML_DSA_44 = PublicKeyAlgorithmOidData('2.16.840.1.101.3.4.3.17', 'ML-DSA-44')
+    ML_DSA_65 = PublicKeyAlgorithmOidData('2.16.840.1.101.3.4.3.18', 'ML-DSA-65')
+    ML_DSA_87 = PublicKeyAlgorithmOidData('2.16.840.1.101.3.4.3.19', 'ML-DSA-87')
 
     @property
     def dotted_string(self) -> str:
@@ -600,7 +607,14 @@ class PublicKeyAlgorithmOid(enum.Enum):
             return cls.RSA
         if isinstance(public_key, ec.EllipticCurvePublicKey):
             return cls.ECC
-        err_msg = 'Unsupported key type, expected RSA or ECC key.'
+        if isinstance(public_key, (mldsa.MLDSA44PublicKey, mldsa.MLDSA65PublicKey, mldsa.MLDSA87PublicKey)):
+            if isinstance(public_key, mldsa.MLDSA44PublicKey):
+                return cls.ML_DSA_44
+            if isinstance(public_key, mldsa.MLDSA65PublicKey):
+                return cls.ML_DSA_65
+            if isinstance(public_key, mldsa.MLDSA87PublicKey):
+                return cls.ML_DSA_87
+        err_msg = 'Unsupported key type, expected RSA, ECC, or ML-DSA key.'
         raise TypeError(err_msg)
 
 
@@ -854,6 +868,29 @@ class AlgorithmIdentifier(enum.Enum):
         None,
         HashAlgorithm.SHA3_512,
     )
+
+    ML_DSA_44 = AlgorithmIdentifierData(
+        '2.16.840.1.101.3.4.3.17',
+        'ML-DSA-44',
+        PublicKeyAlgorithmOid.ML_DSA_44,
+        None,
+        None,
+    )
+    ML_DSA_65 = AlgorithmIdentifierData(
+        '2.16.840.1.101.3.4.3.18',
+        'ML-DSA-65',
+        PublicKeyAlgorithmOid.ML_DSA_65,
+        None,
+        None,
+    )
+    ML_DSA_87 = AlgorithmIdentifierData(
+        '2.16.840.1.101.3.4.3.19',
+        'ML-DSA-87',
+        PublicKeyAlgorithmOid.ML_DSA_87,
+        None,
+        None,
+    )
+
     PASSWORD_BASED_MAC = AlgorithmIdentifierData(
         '1.2.840.113533.7.66.13',
         'Password Based MAC',
@@ -1009,7 +1046,7 @@ class PublicKeyInfo:
     _key_size: None | int = None
     _named_curve: None | NamedCurve = None
 
-    def __init__(
+    def __init__(  # noqa: C901
         self,
         public_key_algorithm_oid: PublicKeyAlgorithmOid,
         key_size: None | int = None,
@@ -1040,6 +1077,27 @@ class PublicKeyInfo:
                 raise ValueError(err_msg)
             self._key_size = named_curve.key_size
             self._named_curve = named_curve
+        elif self._public_key_algorithm_oid in (
+            PublicKeyAlgorithmOid.ML_DSA_44,
+            PublicKeyAlgorithmOid.ML_DSA_65,
+            PublicKeyAlgorithmOid.ML_DSA_87,
+        ):
+            if self._public_key_algorithm_oid == PublicKeyAlgorithmOid.ML_DSA_44:
+                expected_key_size = ML_DSA_44_PUBLIC_KEY_SIZE
+            elif self._public_key_algorithm_oid == PublicKeyAlgorithmOid.ML_DSA_65:
+                expected_key_size = ML_DSA_65_PUBLIC_KEY_SIZE
+            elif self._public_key_algorithm_oid == PublicKeyAlgorithmOid.ML_DSA_87:
+                expected_key_size = ML_DSA_87_PUBLIC_KEY_SIZE
+            if key_size is not None and key_size != expected_key_size:
+                err_msg = (
+                    f'{self._public_key_algorithm_oid.verbose_name} public key size must be '
+                    f'{expected_key_size} bytes, but found {key_size} bytes.'
+                )
+                raise ValueError(err_msg)
+            self._key_size = expected_key_size
+            if named_curve is not None:
+                err_msg = 'ML-DSA keys cannot have a named curve associated with it.'
+                raise ValueError(err_msg)
 
     def __eq__(self, other: object) -> bool:
         """Defines the behaviour on use of the equality operator.
@@ -1071,6 +1129,12 @@ class PublicKeyInfo:
                 err_msg = 'Failed to determine named curve.'
                 raise ValueError(err_msg)
             return f'ECC-{self.named_curve.verbose_name}'
+        if self.public_key_algorithm_oid in (
+            PublicKeyAlgorithmOid.ML_DSA_44,
+            PublicKeyAlgorithmOid.ML_DSA_65,
+            PublicKeyAlgorithmOid.ML_DSA_87,
+        ):
+            return self.public_key_algorithm_oid.verbose_name
         return 'Invalid Signature Suite'
 
     @property
@@ -1124,7 +1188,13 @@ class PublicKeyInfo:
                 key_size=public_key.key_size,
                 named_curve=NamedCurve[public_key.curve.name.upper()],
             )
-        err_msg = 'Unsupported public key type found. Must be RSA or ECC key.'
+        if isinstance(public_key, mldsa.MLDSA44PublicKey):
+            return cls(public_key_algorithm_oid=PublicKeyAlgorithmOid.ML_DSA_44)
+        if isinstance(public_key, mldsa.MLDSA65PublicKey):
+            return cls(public_key_algorithm_oid=PublicKeyAlgorithmOid.ML_DSA_65)
+        if isinstance(public_key, mldsa.MLDSA87PublicKey):
+            return cls(public_key_algorithm_oid=PublicKeyAlgorithmOid.ML_DSA_87)
+        err_msg = 'Unsupported public key type found. Must be RSA, ECC, or ML-DSA key.'
         raise TypeError(err_msg)
 
     @classmethod
@@ -1344,6 +1414,12 @@ class KeyPairGenerator:
             return rsa.generate_private_key(public_exponent=65537, key_size=public_key.key_size)
         if isinstance(public_key, ec.EllipticCurvePublicKey):
             return ec.generate_private_key(public_key.curve)
+        if isinstance(public_key, mldsa.MLDSA44PublicKey):
+            return mldsa.MLDSA44PrivateKey.generate()
+        if isinstance(public_key, mldsa.MLDSA65PublicKey):
+            return mldsa.MLDSA65PrivateKey.generate()
+        if isinstance(public_key, mldsa.MLDSA87PublicKey):
+            return mldsa.MLDSA87PrivateKey.generate()
         err_msg = 'Unsupported key type found.'
         raise TypeError(err_msg)
 
@@ -1383,7 +1459,7 @@ class KeyPairGenerator:
         return cls.generate_key_pair_for_public_key(public_key)
 
     @staticmethod
-    def generate_key_pair_for_public_key_info(
+    def generate_key_pair_for_public_key_info(  # noqa: C901
         public_key_info: PublicKeyInfo,
     ) -> PrivateKey:
         """Generates a new key-pair of the type given by the PublicKeyInfo object.
@@ -1419,6 +1495,12 @@ class KeyPairGenerator:
                 err_msg = 'Curve not found.'
                 raise ValueError(err_msg)
             return ec.generate_private_key(curve=public_key_info.named_curve.curve())
+        if public_key_info.public_key_algorithm_oid == PublicKeyAlgorithmOid.ML_DSA_44:
+            return mldsa.MLDSA44PrivateKey.generate()
+        if public_key_info.public_key_algorithm_oid == PublicKeyAlgorithmOid.ML_DSA_65:
+            return mldsa.MLDSA65PrivateKey.generate()
+        if public_key_info.public_key_algorithm_oid == PublicKeyAlgorithmOid.ML_DSA_87:
+            return mldsa.MLDSA87PrivateKey.generate()
         err_msg = 'Unsupported key type found.'
         raise TypeError(err_msg)
 

@@ -487,7 +487,7 @@ wheels = [
 
 [[package]]
 name = "trustpoint-core"
-version = "0.3.1"
+version = "0.3.2"
 source = { editable = "." }
 dependencies = [
     { name = "cryptography" },
@@ -505,7 +505,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "cryptography", specifier = ">=46.0.1" },
+    { name = "cryptography", specifier = ">=49.0.0" },
     { name = "hatchling", specifier = ">=1.27.0" },
 ]
 

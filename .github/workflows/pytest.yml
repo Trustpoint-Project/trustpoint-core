@@ -1,4 +1,4 @@
-name: Pytest
+name: Tests / Pytest
 
 # Trigger this workflow on pull requests to ensure tests are executed before merging.
 on:
